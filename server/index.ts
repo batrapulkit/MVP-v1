@@ -1,36 +1,38 @@
 import express, { type Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
-import { registerRoutes } from "./src/routes/registerRoutes"; // API routes
+import { registerRoutes } from "./src/routes/registerRoutes";
 import { setupVite, serveStatic, log } from "./vite";
 import cors from "cors";
-
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
 dotenv.config();
 
 (async () => {
-  // === API SERVER ===
-  const apiApp = express();
+  const app = express();
 
-  // Parse JSON and URL-encoded bodies
-  apiApp.use(express.json());
-  apiApp.use(express.urlencoded({ extended: false }));
+  // Middleware
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
+  app.use(cookieParser());
 
-  // IMPORTANT: cookieParser must come BEFORE cors and routes
-  apiApp.use(cookieParser());
-
-  // Setup CORS - must come AFTER cookieParser for credentials to work
-  apiApp.use(
+  // CORS setup
+  app.use(
     cors({
-      origin: "http://127.0.0.1:2000", // frontend origin
-      credentials: true, // allow cookies to be sent
+      origin:
+        process.env.NODE_ENV === "production"
+          ? true // allow all in production
+          : "http://127.0.0.1:2000", // dev mode
+      credentials: true,
     })
   );
 
-  // Mount your API routes AFTER cookieParser and cors
-  await registerRoutes(apiApp);
+  // Register API routes
+  await registerRoutes(app);
 
-  // Error handling middleware
-  apiApp.use(
+  // Error handler
+  app.use(
     (err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
@@ -41,30 +43,29 @@ dotenv.config();
     }
   );
 
-  const http = await import("http");
-  const apiServer = http.createServer(apiApp);
-
-  const apiPort = 3001; // API port
-  const host = "127.0.0.1";
-
-  apiServer.listen(apiPort, host, () => {
-    log(`✅ API Server running at http://${host}:${apiPort}`);
-  });
-
-  // === FRONTEND / STATIC SERVER ===
-  const frontendApp = express();
-
-  if (frontendApp.get("env") === "development") {
-    const frontendHttp = await import("http");
-    const frontendServer = frontendHttp.createServer(frontendApp);
-    await setupVite(frontendApp, frontendServer); // pass server instance
+  // === Frontend Handling ===
+  if (process.env.NODE_ENV === "development") {
+    const http = await import("http");
+    const server = http.createServer(app);
+    await setupVite(app, server);
   } else {
-    serveStatic(frontendApp);
+    // In production: serve built frontend
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    serveStatic(app);
+
+    // SPA fallback for React Router
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(__dirname, "dist", "index.html"));
+    });
   }
 
-  const frontendPort = 2000; // Frontend port
+  // === Unified Server ===
+  const PORT = process.env.PORT || 8080;
+  const HOST = "0.0.0.0";
 
-  frontendApp.listen(frontendPort, host, () => {
-    log(`✅ Frontend Server running at http://${host}:${frontendPort}`);
+  app.listen(PORT, HOST, () => {
+    log(`✅ Triponic server running at http://${HOST}:${PORT}`);
   });
 })();
