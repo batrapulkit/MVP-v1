@@ -21,7 +21,7 @@ dotenv.config();
   const allowedOrigins = [
     "http://127.0.0.1:2000",
     "http://localhost:5000",
-    "https://king-prawn-app-h3tyd.ondigitalocean.app",
+    "https://shark-app-fyixd.ondigitalocean.app/",
     process.env.FRONTEND_URL,
   ].filter(Boolean);
 
