@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { registerUser } from '@/api/services';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/supabase/client';
 import { useUserStore } from '@/stores/useUserStore';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -18,11 +18,6 @@ import {
   MapPin,
   Calendar,
 } from 'lucide-react';
-
-export const supabase = createClient(
-  'https://ktojsokydntrdbbpttsa.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0b2pzb2t5ZG50cmRiYnB0dHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMDM0OTQsImV4cCI6MjA2ODc3OTQ5NH0.Z9CUyMuP36RcwP3sOLT2i0qV2mFBLhN9gQ2U7FyLGnE'
-);
 
 type FormData = {
   user_name: string;
@@ -131,8 +126,8 @@ export default function SignUp() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { 
-  redirectTo: `${window.location.origin}/auth/callback` 
-    },  
+        redirectTo: `${window.location.origin}/auth/callback` 
+      },
     });
     if (error)
       toast({
