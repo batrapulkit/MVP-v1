@@ -4,68 +4,70 @@ import { registerRoutes } from "./src/routes/registerRoutes";
 import { setupVite, serveStatic, log } from "./vite";
 import cors from "cors";
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
 
 dotenv.config();
 
 (async () => {
   const app = express();
 
-  // Middleware
+  // Parse JSON and URL-encoded bodies
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
+
+  // IMPORTANT: cookieParser must come BEFORE cors and routes
   app.use(cookieParser());
 
-  // CORS setup
+  // Setup CORS with dynamic origin
+  const allowedOrigins = [
+    "http://127.0.0.1:2000",
+    "http://localhost:5000",
+    "https://king-prawn-app-h3tyd.ondigitalocean.app",
+    process.env.FRONTEND_URL,
+  ].filter(Boolean);
+
   app.use(
     cors({
-      origin:
-        process.env.NODE_ENV === "production"
-          ? true // allow all in production
-          : "http://127.0.0.1:2000", // dev mode
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error("Not allowed by CORS"));
+        }
+      },
       credentials: true,
     })
   );
 
-  // Register API routes
+  // Mount API routes
   await registerRoutes(app);
 
-  // Error handler
-  app.use(
-    (err: any, _req: Request, res: Response, _next: NextFunction) => {
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      if (!res.headersSent) {
-        res.status(status).json({ message });
-      }
-      console.error(err);
-    }
-  );
-
-  // === Frontend Handling ===
+  // Setup Vite in development, serve static in production
   if (process.env.NODE_ENV === "development") {
-    const http = await import("http");
-    const server = http.createServer(app);
+    const server = await import("http").then(http => http.createServer(app));
     await setupVite(app, server);
   } else {
-    // In production: serve built frontend
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-
     serveStatic(app);
-
-    // SPA fallback for React Router
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(__dirname, "dist", "index.html"));
-    });
   }
 
-  // === Unified Server ===
-  const PORT = process.env.PORT || 8080;
-  const HOST = "0.0.0.0";
+  // Error handling middleware
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    if (!res.headersSent) {
+      res.status(status).json({ message });
+    }
+    console.error(err);
+  });
+
+  // Use environment variable for port, fallback to 8080 (Digital Ocean default)
+  const PORT = parseInt(process.env.PORT || "8080", 10);
+  const HOST = process.env.HOST || "0.0.0.0"; // 0.0.0.0 allows external connections
 
   app.listen(PORT, HOST, () => {
-    log(`✅ Triponic server running at http://${HOST}:${PORT}`);
+    log(`✅ Server running at http://${HOST}:${PORT}`);
+    log(`📦 Environment: ${process.env.NODE_ENV || "development"}`);
   });
 })();
