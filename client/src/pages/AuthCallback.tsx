@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/supabase/client';
+import { supabase } from '@/api/client';
 import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import { registerUser, googleLoginUser } from '@/api/services';
