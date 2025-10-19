@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { loginUser } from '@/api/services';
 import { useUserStore } from '@/stores/useUserStore';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/supabase/client';
+import { supabase } from '@/api/client';
 import { 
   Mail, 
   Lock, 
