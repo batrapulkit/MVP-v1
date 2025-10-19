@@ -100,7 +100,7 @@ export default function SignIn() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `http://127.0.0.1:2000/auth/callback?redirect=${encodeURIComponent(redirect)}`,
+        redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`,
       },
     });
 
