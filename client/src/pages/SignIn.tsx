@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { loginUser } from '@/api/services';
 import { useUserStore } from '@/stores/useUserStore';
 import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/supabase/client';
 import { 
   Mail, 
   Lock, 
@@ -17,11 +17,6 @@ import {
   ArrowRight,
   Loader2
 } from 'lucide-react';
-
-export const supabase = createClient(
-  'https://ktojsokydntrdbbpttsa.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0b2pzb2t5ZG50cmRiYnB0dHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMDM0OTQsImV4cCI6MjA2ODc3OTQ5NH0.Z9CUyMuP36RcwP3sOLT2i0qV2mFBLhN9gQ2U7FyLGnE'
-);
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
