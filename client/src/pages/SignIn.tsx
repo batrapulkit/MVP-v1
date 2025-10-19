@@ -20,7 +20,7 @@ import {
 
 export const supabase = createClient(
   'https://ktojsokydntrdbbpttsa.supabase.co',
-  'YOUR_PUBLIC_ANON_KEY'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0b2pzb2t5ZG50cmRiYnB0dHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMDM0OTQsImV4cCI6MjA2ODc3OTQ5NH0.Z9CUyMuP36RcwP3sOLT2i0qV2mFBLhN9gQ2U7FyLGnE'
 );
 
 export default function SignIn() {
