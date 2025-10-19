@@ -1,8 +1,12 @@
-// src/supabase/client.ts
+import axios from 'axios';
 
-import { createClient } from '@supabase/supabase-js';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.DEV ? 'http://127.0.0.1:3001' : window.location.origin);
 
-const supabaseUrl = 'https://ktojsokydntrdbbpttsa.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0b2pzb2t5ZG50cmRiYnB0dHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMDM0OTQsImV4cCI6MjA2ODc3OTQ5NH0.Z9CUyMuP36RcwP3sOLT2i0qV2mFBLhN9gQ2U7FyLGnE'; // Public anon key from Supabase settings
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const apiClient = axios.create({
+  baseURL: `${API_BASE_URL}/api`,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
