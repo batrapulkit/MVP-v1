@@ -130,7 +130,9 @@ export default function SignUp() {
   const handleGoogleSignIn = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: 'http://127.0.0.1:2000/auth/callback' },
+      options: { 
+  redirectTo: `${window.location.origin}/auth/callback` 
+    },  
     });
     if (error)
       toast({
