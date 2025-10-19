@@ -1,18 +1,12 @@
-import { createClient } from '@supabase/supabase-js';
+import axios from 'axios';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (import.meta.env.DEV ? 'http://127.0.0.1:3001' : window.location.origin);
 
-if (!supabaseUrl || !supabaseKey) {
-  console.error("❌ Missing Supabase environment variables");
-}
-
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    redirectTo: `${window.location.origin}/auth/callback`,
+export const apiClient = axios.create({
+  baseURL: `${API_BASE_URL}/api`,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
   },
 });
-```
