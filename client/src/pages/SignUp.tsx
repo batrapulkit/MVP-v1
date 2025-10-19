@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { registerUser } from '@/api/services';
-import { supabase } from '@/supabase/client';
+import { supabase } from '@/api/client';
 import { useUserStore } from '@/stores/useUserStore';
 import { useToast } from '@/hooks/use-toast';
 import {
