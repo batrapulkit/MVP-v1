@@ -1,0 +1,11 @@
+# Allow all bots to crawl the site
+User-agent: *
+Allow: /
+
+# Block sensitive or non-public routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+
+# Point to the sitemap for this subdomain
+Sitemap: https://try.triponic.com/sitemap.xml
