@@ -10,32 +10,27 @@ dotenv.config();
 (async () => {
   const app = express();
 
-  // Parse JSON and URL-encoded bodies
+  // Parse request bodies
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 
-  // IMPORTANT: cookieParser must come BEFORE cors and routes
+  // Cookie parser must come early
   app.use(cookieParser());
 
-  // Setup CORS with dynamic origin
+  // Configure allowed origins
   const allowedOrigins = [
     "http://127.0.0.1:2000",
     "http://localhost:5000",
-    "https://shark-app-fyixd.ondigitalocean.app/",
+    "https://shark-app-fyixd.ondigitalocean.app", // ✅ no trailing slash
     process.env.FRONTEND_URL,
   ].filter(Boolean);
 
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        
-        if (allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error("Not allowed by CORS"));
-        }
+        if (allowedOrigins.includes(origin)) callback(null, true);
+        else callback(new Error("Not allowed by CORS"));
       },
       credentials: true,
     })
@@ -44,27 +39,26 @@ dotenv.config();
   // Mount API routes
   await registerRoutes(app);
 
-  // Setup Vite in development, serve static in production
+  // Environment-specific behavior
   if (process.env.NODE_ENV === "development") {
-    const server = await import("http").then(http => http.createServer(app));
+    const { createServer } = await import("http");
+    const server = createServer(app);
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // Error handling middleware
+  // Global error handler
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
+    const status = err.status || 500;
     const message = err.message || "Internal Server Error";
-    if (!res.headersSent) {
-      res.status(status).json({ message });
-    }
-    console.error(err);
+    if (!res.headersSent) res.status(status).json({ message });
+    console.error("❌ Server Error:", err);
   });
 
-  // Use environment variable for port, fallback to 8080 (Digital Ocean default)
+  // Start server
   const PORT = parseInt(process.env.PORT || "8080", 10);
-  const HOST = process.env.HOST || "0.0.0.0"; // 0.0.0.0 allows external connections
+  const HOST = process.env.HOST || "0.0.0.0";
 
   app.listen(PORT, HOST, () => {
     log(`✅ Server running at http://${HOST}:${PORT}`);
