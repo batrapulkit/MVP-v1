@@ -6,6 +6,13 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 dotenv.config();
+console.log("🧩 Environment loaded:", {
+  NODE_ENV: process.env.NODE_ENV,
+  JWT_SECRET: !!process.env.JWT_SECRET,
+  SUPABASE_URL: !!process.env.SUPABASE_URL,
+  SUPABASE_KEY: !!process.env.SUPABASE_KEY,
+  FRONTEND_URL: process.env.FRONTEND_URL,
+});
 
 (async () => {
   const app = express();
