@@ -1,414 +1,216 @@
-import { useState } from 'react';
-import { Search, MapPin, Calendar, Star, Filter, ChevronDown, Home, Building, Wifi, Coffee, Car, Tv, Bath, Users } from 'lucide-react';
-import { useLocation } from 'wouter';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+
+const expediaBannerHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+body { margin:0; padding:0; font-family: Inter, sans-serif; background:#fff; color:#000; overflow:hidden; }
+.eg-affiliate-banners { margin:40px auto; }
+</style>
+</head>
+<body>
+<div class="eg-affiliate-banners"
+    data-program="us-expedia"
+    data-network="pz"
+    data-layout="leaderboard"
+    data-image="sailing"
+    data-message="Find your perfect stay for 2026"
+    data-camref="1011l5mZ2Y"
+    data-pubref="Hotelbanner"
+    data-link="stays"></div>
+<script class="eg-affiliate-banners-script"
+    src="https://creator.expediagroup.com/products/banners/assets/eg-affiliate-banners.js"></script>
+</body>
+</html>`;
+
+const hotelsWidgetHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: #f9fafb; }
+    section { padding: 40px 20px; background: #fff; margin: 0 auto 60px auto; max-width: 1200px; border-radius: 20px; box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+    h2 { font-size: 22px; color: #3b0764; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <section>
+    <h2>Expedia Hotel Search</h2>
+    <div class="eg-widget" data-widget="search" data-program="ca-expedia" data-lobs="stays" data-network="pz" data-camref="1110lfshU" data-pubref="Hotels"></div>
+    <script class="eg-widgets-script" src="https://creator.expediagroup.com/products/widgets/assets/eg-widgets.js"></script>
+  </section>
+
+  <section>
+    <h2>Travelpayouts Hotel Deals</h2>
+    <script async src="https://tp.media/content?currency=usd&trs=414043&shmarker=628844&type=compact&host=&locale=en&limit=8&powered_by=true&nobooking=&primary=%23ff8e00&special=%23e0e0e0&promo_id=4026&campaign_id=101" charset="utf-8"></script>
+  </section>
+
+  <section>
+    <h2>Hotel Map View (Patong Beach)</h2>
+    <script async src="https://tp.media/content?currency=usd&trs=414043&shmarker=628844&search_host=search.hotellook.com&locale=en&powered_by=true&draggable=true&disable_zoom=false&show_logo=true&scrollwheel=false&color=%2307AF61&contrast_color=%23ffffff&width=1000&height=500&lat=7.893587&lng=98.29682&zoom=14&radius=60&stars=0&rating_from=0&rating_to=10&promo_id=4285&campaign_id=101" charset="utf-8"></script>
+  </section>
+
+  <section>
+    <h2>🧠 AI Hotel Recommender</h2>
+    <p style="font-size:16px; color:#444;">
+      Coming soon: Smart hotel picks tailored to your preferences, budget, and style — powered by Triponic AI.
+    </p>
+  </section>
+</body>
+</html>`;
+
+const iframeStyle: React.CSSProperties = {
+  width: "100%",
+  maxWidth: 900,
+  height: 150,
+  border: "none",
+  borderRadius: 20,
+  boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+  margin: "24px auto",
+  display: "block",
+  overflow: "hidden",
+};
+
+const trendingHotels = [
+  { city: "Paris", text: "Romantic getaways", price: "From $89/night" },
+  { city: "Tokyo", text: "City lights & culture", price: "From $75/night" },
+  { city: "Dubai", text: "Luxury stays", price: "From $110/night" },
+  { city: "Toronto", text: "Urban escapes", price: "From $95/night" },
+  { city: "Bali", text: "Beach resorts", price: "From $60/night" },
+];
 
 const Hotels = () => {
-  const [, setLocation] = useLocation();
-  const [priceRange, setPriceRange] = useState<[number, number]>([50, 500]);
-  const [selectedRating, setSelectedRating] = useState<number | null>(null);
-  
-  const hotels = [
-    {
-      id: 1,
-      name: 'The Grand Plaza Hotel',
-      location: 'Tokyo, Japan',
-      price: 350,
-      rating: 4.9,
-      reviews: 1243,
-      image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2070&auto=format&fit=crop',
-      description: 'Luxury hotel with breathtaking views of Tokyo skyline, featuring a rooftop pool and award-winning restaurants.',
-      amenities: ['Swimming Pool', 'Spa', 'Fine Dining', 'Fitness Center', 'Free WiFi']
-    },
-    {
-      id: 2,
-      name: 'Seaside Resort & Spa',
-      location: 'Bali, Indonesia',
-      price: 280,
-      rating: 4.8,
-      reviews: 987,
-      image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop',
-      description: 'Beachfront villas with private pools and direct beach access, surrounded by tropical gardens.',
-      amenities: ['Private Beach', 'Spa', 'Water Sports', 'Multiple Pools', 'Butler Service']
-    },
-    {
-      id: 3,
-      name: 'Alpine Lodge',
-      location: 'Zurich, Switzerland',
-      price: 420,
-      rating: 4.9,
-      reviews: 756,
-      image: 'https://images.unsplash.com/photo-1610641818989-c2051b5e2cfd?q=80&w=2070&auto=format&fit=crop',
-      description: 'Charming mountain retreat with stunning Alpine views, traditional Swiss cuisine, and premium ski-in/ski-out access.',
-      amenities: ['Ski Access', 'Sauna', 'Fireplace', 'Restaurant', 'Mountain Views']
-    },
-    {
-      id: 4,
-      name: 'Urban Boutique Hotel',
-      location: 'Paris, France',
-      price: 310,
-      rating: 4.7,
-      reviews: 1127,
-      image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=2070&auto=format&fit=crop',
-      description: 'Stylish boutique hotel in central Paris, within walking distance to major attractions and shopping districts.',
-      amenities: ['Rooftop Bar', 'Concierge', 'Room Service', 'Designer Interiors', 'City Tours']
-    },
-    {
-      id: 5,
-      name: 'Beachfront Paradise',
-      location: 'Cancun, Mexico',
-      price: 250,
-      rating: 4.6,
-      reviews: 1432,
-      image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=2070&auto=format&fit=crop',
-      description: 'All-inclusive beachfront resort with multiple restaurants, water sports, and entertainment options for all ages.',
-      amenities: ['All-Inclusive', 'Water Sports', 'Multiple Restaurants', 'Entertainment', 'Kids Club']
-    },
-    {
-      id: 6,
-      name: 'Historic City Inn',
-      location: 'Prague, Czech Republic',
-      price: 180,
-      rating: 4.5,
-      reviews: 863,
-      image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?q=80&w=2070&auto=format&fit=crop',
-      description: 'Charming hotel set in a restored medieval building in the heart of Prague\'s historic district.',
-      amenities: ['Historic Building', 'Breakfast Included', 'Walking Tours', 'Airport Shuttle', 'Bar']
-    }
-  ];
-  
-  const propertyTypes = [
-    { icon: <Home className="w-5 h-5" />, label: 'Hotels', count: 2450 },
-    { icon: <Building className="w-5 h-5" />, label: 'Apartments', count: 1873 },
-    { icon: <Home className="w-5 h-5" />, label: 'Resorts', count: 652 },
-    { icon: <Home className="w-5 h-5" />, label: 'Villas', count: 423 },
-    { icon: <Home className="w-5 h-5" />, label: 'Hostels', count: 378 }
-  ];
-  
-  const amenities = [
-    { icon: <Wifi className="w-5 h-5" />, label: 'Free WiFi', count: 4123 },
-    { icon: <Coffee className="w-5 h-5" />, label: 'Breakfast', count: 3298 },
-    { icon: <Car className="w-5 h-5" />, label: 'Parking', count: 2784 },
-    { icon: <Tv className="w-5 h-5" />, label: 'TV', count: 4521 },
-    { icon: <Bath className="w-5 h-5" />, label: 'Pool', count: 1652 },
-    { icon: <Users className="w-5 h-5" />, label: 'Family Rooms', count: 2341 }
-  ];
-  
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<Star key={`full-${i}`} className="w-4 h-4 fill-amber-400 text-amber-400" />);
-    }
-    
-    if (hasHalfStar) {
-      stars.push(
-        <div key="half" className="relative">
-          <Star className="w-4 h-4 text-gray-200" />
-          <div className="absolute inset-0 overflow-hidden w-1/2">
-            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-          </div>
-        </div>
-      );
-    }
-    
-    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(<Star key={`empty-${i}`} className="w-4 h-4 text-gray-200" />);
-    }
-    
-    return <div className="flex">{stars}</div>;
-  };
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // auto-scroll carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % trendingHotels.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero/Search Section */}
-      <div className="relative bg-gradient-to-r from-blue-900 to-indigo-800 py-12 md:py-16 overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 bg-blue-900/70 mix-blend-multiply"></div>
-          <img 
-            src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop" 
-            alt="Hotel background" 
-            className="w-full h-full object-cover object-center"
-          />
+    <div className="min-h-screen flex flex-col items-center px-6 pt-20 relative overflow-hidden">
+      {/* Gradient Background */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-indigo-700 via-purple-800 to-teal-700 animate-gradient-x"></div>
+
+      {/* Floating Elements */}
+      <motion.div className="absolute left-10 top-40 text-6xl opacity-40"
+        animate={{ y: [0, 20, 0] }} transition={{ duration: 8, repeat: Infinity }}>
+        🏨
+      </motion.div>
+      <motion.div className="absolute right-10 top-60 text-6xl opacity-40"
+        animate={{ y: [0, -20, 0] }} transition={{ duration: 6, repeat: Infinity }}>
+        🌃
+      </motion.div>
+      <motion.div className="absolute left-0 bottom-32 text-5xl opacity-50"
+        animate={{ x: [0, 40, 0] }} transition={{ duration: 7, repeat: Infinity }}>
+        🌴
+      </motion.div>
+      <motion.div className="absolute right-0 bottom-52 text-5xl opacity-50"
+        animate={{ x: [0, -40, 0] }} transition={{ duration: 9, repeat: Infinity }}>
+        🏖️
+      </motion.div>
+
+      {/* Heading */}
+      <motion.h1 className="text-6xl md:text-7xl font-extrabold text-white text-center mb-4"
+        initial={{ opacity: 0, y: -40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
+        Triponic Hotels 2026 🏨
+      </motion.h1>
+
+      {/* Tagline */}
+      <motion.p className="mb-10 max-w-2xl text-center text-xl md:text-2xl font-medium text-gray-100 leading-relaxed"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+        <span className="font-semibold">Stay smarter, travel better.</span>
+        <br />
+        Find top stays via Expedia, explore map views, and soon enjoy Triponic’s AI picks.
+      </motion.p>
+
+      {/* Features */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 text-white max-w-3xl">
+        <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-lg text-center">
+          <div className="text-3xl mb-2">🏨</div>
+          <h3 className="font-bold">Best Hotel Deals</h3>
+          <p className="text-sm opacity-80">Save on stays worldwide</p>
         </div>
-        
-        <div className="container mx-auto px-4 relative">
-          <div className="max-w-3xl mx-auto text-center text-white mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">
-              Find and Book Perfect Hotels
-            </h1>
-            <p className="text-lg text-blue-100">
-              Discover comfortable stays with our AI-powered hotel recommendations
-            </p>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-md p-4 max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <div className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-3 focus-within:border-primary">
-                  <MapPin className="w-5 h-5 text-gray-500" />
-                  <input 
-                    type="text" 
-                    placeholder="Where are you going?" 
-                    className="w-full bg-transparent border-none focus:outline-none text-gray-700"
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-3 focus-within:border-primary">
-                  <Calendar className="w-5 h-5 text-gray-500" />
-                  <input 
-                    type="text" 
-                    placeholder="Check-in — Check-out" 
-                    className="w-full bg-transparent border-none focus:outline-none text-gray-700"
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center gap-3 border border-gray-300 rounded-lg px-4 py-3 focus-within:border-primary">
-                  <Users className="w-5 h-5 text-gray-500" />
-                  <input 
-                    type="text" 
-                    placeholder="2 adults, 0 children" 
-                    className="w-full bg-transparent border-none focus:outline-none text-gray-700"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-4 flex justify-center">
-              <button className="bg-primary text-white px-8 py-3 rounded-lg font-medium hover:bg-primary/90 transition">
-                Search Hotels
-              </button>
-            </div>
-          </div>
+        <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-lg text-center">
+          <div className="text-3xl mb-2">🗺️</div>
+          <h3 className="font-bold">Map & Location</h3>
+          <p className="text-sm opacity-80">Visualize before booking</p>
+        </div>
+        <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-lg text-center">
+          <div className="text-3xl mb-2">🤖</div>
+          <h3 className="font-bold">AI Recommender</h3>
+          <p className="text-sm opacity-80">Smart, personalized picks</p>
         </div>
       </div>
-      
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar/Filters */}
-          <div className="lg:w-1/4">
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-              <h3 className="font-bold text-lg mb-4">Price Range</h3>
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="bg-gray-100 rounded-lg px-3 py-1">
-                    <span className="text-gray-800 font-medium">${priceRange[0]}</span>
-                  </div>
-                  <div className="bg-gray-100 rounded-lg px-3 py-1">
-                    <span className="text-gray-800 font-medium">${priceRange[1]}</span>
-                  </div>
-                </div>
-                <input 
-                  type="range" 
-                  min="50" 
-                  max="1000" 
-                  value={priceRange[1]} 
-                  onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                  className="w-full"
-                />
+
+      {/* Widgets */}
+      <motion.div className="w-full max-w-5xl bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-6"
+        initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.6 }}>
+        <iframe title="Hotel Widgets" srcDoc={hotelsWidgetHTML}
+          className="w-full min-h-[2400px] border-none rounded-2xl" />
+      </motion.div>
+
+      {/* Trending Hotels Carousel */}
+      <div className="mt-16 w-full max-w-4xl">
+        <h2 className="text-white text-2xl font-bold mb-4 text-center">
+          🌟 Popular Hotel Destinations
+        </h2>
+        <div className="overflow-hidden relative">
+          <motion.div className="flex gap-6"
+            animate={{ x: `-${currentIndex * 240}px` }}
+            transition={{ type: "tween", duration: 0.8 }}>
+            {trendingHotels.map((h, idx) => (
+              <div key={idx} className="min-w-[220px] bg-white/90 backdrop-blur-md rounded-2xl p-5 shadow-md text-center">
+                <p className="font-semibold text-lg">{h.city}</p>
+                <p className="text-gray-700 mt-1">{h.text}</p>
+                <p className="text-indigo-600 font-bold mt-2">{h.price}</p>
               </div>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-              <h3 className="font-bold text-lg mb-4">Property Type</h3>
-              <div className="space-y-3">
-                {propertyTypes.map((type, index) => (
-                  <div key={index} className="flex items-center justify-between hover:bg-gray-50 p-2 rounded-lg cursor-pointer">
-                    <div className="flex items-center gap-3">
-                      {type.icon}
-                      <span>{type.label}</span>
-                    </div>
-                    <span className="text-gray-500 text-sm">{type.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-              <h3 className="font-bold text-lg mb-4">Guest Rating</h3>
-              <div className="space-y-2">
-                {[5, 4, 3, 2, 1].map((rating) => (
-                  <div 
-                    key={rating} 
-                    className={`flex items-center justify-between p-2 rounded-lg cursor-pointer ${selectedRating === rating ? 'bg-primary/10 border border-primary/30' : 'hover:bg-gray-50'}`}
-                    onClick={() => setSelectedRating(rating === selectedRating ? null : rating)}
-                  >
-                    <div className="flex items-center gap-2">
-                      {renderStars(rating)}
-                      {rating < 5 && <span className="text-gray-500">&amp; up</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="font-bold text-lg mb-4">Amenities</h3>
-              <div className="space-y-3">
-                {amenities.map((amenity, index) => (
-                  <div key={index} className="flex items-center gap-3 hover:bg-gray-50 p-2 rounded-lg cursor-pointer">
-                    <input type="checkbox" className="rounded border-gray-300 text-primary focus:ring-primary" />
-                    <div className="flex items-center gap-2">
-                      {amenity.icon}
-                      <span>{amenity.label}</span>
-                    </div>
-                    <span className="text-gray-500 text-sm ml-auto">{amenity.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-          
-          {/* Main Content */}
-          <div className="lg:w-3/4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-              <h2 className="text-2xl font-bold">
-                <span className="bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">
-                  {hotels.length} Hotels Found
-                </span>
-              </h2>
-              
-              <div className="flex items-center gap-3 mt-4 sm:mt-0">
-                <span className="text-gray-600">Sort by:</span>
-                <button className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm hover:bg-gray-50 transition">
-                  <span className="text-sm font-medium">Recommended</span>
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            
-            <div className="space-y-6">
-              {hotels.map((hotel) => (
-                <div key={hotel.id} className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition flex flex-col md:flex-row">
-                  <div className="md:w-1/3 h-64 md:h-auto relative">
-                    <img 
-                      src={hotel.image} 
-                      alt={hotel.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="md:w-2/3 p-6 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center text-amber-500 mb-2">
-                        {renderStars(hotel.rating)}
-                        <span className="text-sm font-medium ml-2">{hotel.rating}</span>
-                        <span className="text-xs text-gray-500 ml-1">({hotel.reviews} reviews)</span>
-                      </div>
-                      <h3 className="text-xl font-bold mb-1">{hotel.name}</h3>
-                      <div className="flex items-center text-gray-500 text-sm mb-3">
-                        <MapPin className="w-4 h-4 mr-1" />
-                        <span>{hotel.location}</span>
-                      </div>
-                      <p className="text-gray-600 mb-4">{hotel.description}</p>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {hotel.amenities.map((amenity, index) => (
-                          <span key={index} className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
-                            {amenity}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-4 border-t border-gray-100">
-                      <div>
-                        <span className="font-bold text-xl text-primary">${hotel.price}</span>
-                        <span className="text-gray-500 text-sm"> / night</span>
-                      </div>
-                      <button className="bg-primary text-white font-medium py-2 px-6 rounded-lg hover:bg-primary/90 transition mt-3 sm:mt-0">
-                        Book Now
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="mt-10 flex justify-center">
-              <div className="flex gap-2">
-                <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                  1
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                  2
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                  3
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                  ...
-                </button>
-                <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
-                  10
-                </button>
-              </div>
-            </div>
-          </div>
+            ))}
+          </motion.div>
         </div>
       </div>
-      
-      {/* AI Recommendation CTA */}
-      <div className="bg-gradient-to-r from-primary to-indigo-600 py-12 text-white">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="md:w-2/3">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">Get AI-Powered Hotel Recommendations</h2>
-              <p className="text-blue-100 mb-6">
-                Our AI assistant will find the perfect hotel for your trip based on your preferences, budget, and desired amenities. Try our personalized recommendation engine now!
-              </p>
-              <button 
-                className="bg-white text-primary font-bold py-3 px-8 rounded-full hover:bg-blue-50 transition shadow-lg"
-                onClick={() => setLocation('/')}
-              >
-                Get Personalized Recommendations
-              </button>
-            </div>
-            <div className="md:w-1/3 bg-white/10 backdrop-blur-sm p-6 rounded-xl">
-              <ul className="space-y-4">
-                <li className="flex items-start gap-3">
-                  <div className="bg-white/20 rounded-full p-1 mt-1">
-                    <Check className="w-4 h-4" />
-                  </div>
-                  <span>Tailored recommendations based on your travel style</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="bg-white/20 rounded-full p-1 mt-1">
-                    <Check className="w-4 h-4" />
-                  </div>
-                  <span>Find hotels with your must-have amenities</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="bg-white/20 rounded-full p-1 mt-1">
-                    <Check className="w-4 h-4" />
-                  </div>
-                  <span>Best value options within your budget range</span>
-                </li>
-              </ul>
-            </div>
-          </div>
+
+      {/* Expedia Banner */}
+      <motion.div className="w-full max-w-xl mt-14 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-2"
+        initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.2 }}>
+        <iframe title="Expedia Hotel Banner" srcDoc={expediaBannerHTML}
+          sandbox="allow-scripts allow-same-origin" style={iframeStyle} />
+      </motion.div>
+
+      {/* Trusted Logos */}
+      <div className="mt-16 w-full max-w-4xl text-center">
+        <p className="text-gray-200 mb-4">Trusted by top travel partners</p>
+        <div className="flex justify-center gap-10 opacity-80 flex-wrap">
+          <img src="https://logos-world.net/wp-content/uploads/2021/02/Expedia-Logo.png" alt="Expedia" className="h-8" />
+          <img src="https://companieslogo.com/img/orig/TCOM-c4449ac1.png" alt="Trip.com" className="h-8" />
+          <img src="https://companieslogo.com/img/orig/BKNG-e808a96f.png" alt="Booking.com" className="h-8" />
+          <img src="https://cdn.worldvectorlogo.com/logos/skyscanner-1.svg" alt="Skyscanner" className="h-8" />
         </div>
       </div>
+
+      {/* Wave Divider */}
+      <div className="w-full mt-20">
+        <svg viewBox="0 0 1440 320" className="w-full h-24 text-white" preserveAspectRatio="none">
+          <path fill="white" fillOpacity="1"
+            d="M0,160L80,170.7C160,181,320,203,480,186.7C640,171,800,117,960,106.7C1120,96,1280,128,1360,144L1440,160L1440,0L1360,0C1280,0,1120,0,960,0C800,0,640,0,480,0C320,0,160,0,80,0L0,0Z">
+          </path>
+        </svg>
+      </div>
+
+      {/* Extra CSS */}
+      <style>{`
+        .animate-gradient-x { background-size: 200% 200%; animation: gradient-x 15s ease infinite; }
+        @keyframes gradient-x { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+      `}</style>
     </div>
   );
 };
-
-// Helper component for the check icon
-const Check = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="3" 
-    strokeLinecap="round" 
-    strokeLinejoin="round"
-    {...props}
-  >
-    <polyline points="20 6 9 17 4 12"></polyline>
-  </svg>
-);
 
 export default Hotels;
