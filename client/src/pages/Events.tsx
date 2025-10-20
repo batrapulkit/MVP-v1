@@ -1,7 +1,7 @@
 // Events.tsx – with filters, ticket prices, add to trip
 import { useEffect, useState } from 'react';
 import { Search, MapPin, Calendar, Plus } from 'lucide-react';
-import { useTicketmasterEvents } from '../hooks/useTicketmasterEvents';
+import { useTicketmasterEvents } from '..//hooks/useTicketmasterEvents';
 
 const categories = ['All', 'Music', 'Sports', 'Arts & Theatre', 'Film', 'Miscellaneous'];
 
