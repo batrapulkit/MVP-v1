@@ -15,20 +15,20 @@ export function log(message: string, source = "express") {
     second: "2-digit",
     hour12: true,
   });
+
   console.log(`${formattedTime} [${source}] ${message}`);
 }
 
-// ✅ Development: Vite middleware
 export async function setupVite(app: Express, server: Server) {
+  const serverOptions = {
+    middlewareMode: true,
+    hmr: { server },
+    allowedHosts: true as true,
+  };
+
   const vite = await createViteServer({
     ...viteConfig,
     configFile: false,
-    server: {
-      middlewareMode: true,
-      hmr: { server },
-      allowedHosts: true,
-    },
-    appType: "custom",
     customLogger: {
       ...viteLogger,
       error: (msg, options) => {
@@ -36,26 +36,28 @@ export async function setupVite(app: Express, server: Server) {
         process.exit(1);
       },
     },
+    server: serverOptions,
+    appType: "custom",
   });
 
   app.use(vite.middlewares);
-
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
+
     try {
       const clientTemplate = path.resolve(
         import.meta.dirname,
         "..",
         "client",
-        "index.html"
+        "index.html",
       );
 
+      // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
       template = template.replace(
         `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`
+        `src="/src/main.tsx?v=${nanoid()}"`,
       );
-
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
@@ -65,24 +67,19 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
-// ✅ Production: serve built static files
 export function serveStatic(app: Express) {
-  const __dirname = path.resolve();
-  const distPath = path.join(__dirname, "dist", "client");
+  const distPath = path.resolve(import.meta.dirname, "public");
 
   if (!fs.existsSync(distPath)) {
     throw new Error(
-      `❌ Build directory not found: ${distPath}. Run "npm run build" before starting the server.`
+      `Could not find the build directory: ${distPath}, make sure to build the client first`,
     );
   }
 
-  // Serve all static assets
   app.use(express.static(distPath));
 
-  // Fallback for SPA routing
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(distPath, "index.html"));
+  // fall through to index.html if the file doesn't exist
+  app.use("*", (_req, res) => {
+    res.sendFile(path.resolve(distPath, "index.html"));
   });
-
-  log(`📁 Serving static files from ${distPath}`);
 }
