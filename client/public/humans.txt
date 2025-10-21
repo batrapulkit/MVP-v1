@@ -1,11 +1,9 @@
 /* TEAM */
-Founder: Pulkit
-Website: https://triponic.com
-Role: CEO & Developer
+Site: Triponic.com
+Founder & Developer: Pulkit Batra
+Contact: pulkit@triponic.com
+Twitter: https://twitter.com/triponictravel
+LinkedIn: https://linkedin.com/company/triponic
 
-/* TECHNOLOGY */
-Built with: React, TypeScript, Supabase, OpenAI, Skyscanner API, Tailwind
-Hosting: (Vercel/Netlify/Cloudflare — adjust based on your deploy)
-
-/* THANKS */
-Travelers worldwide who inspire us
+/* LAST UPDATE */
+2025-10-21
