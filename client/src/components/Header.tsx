@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "./ui/button";
 import { useUserStore } from '@/stores/useUserStore';
 import {
@@ -38,6 +38,10 @@ type User = {
 };
 
 export default function Header() {
+  const [location] = useLocation();
+  // Check if we are on Sign In or Sign Up page
+  const isAuthPage = location === "/signin" || location === "/signup";
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -48,6 +52,7 @@ export default function Header() {
   const dropdownRef = useRef<HTMLLIElement>(null);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
 
+  // User fetch
   useEffect(() => {
     async function loadUser() {
       try {
@@ -58,7 +63,6 @@ export default function Header() {
           setUser(null);
         }
       } catch (error) {
-        console.error("Error fetching current user:", error);
         setUser(null);
       } finally {
         setLoading(false);
@@ -67,39 +71,35 @@ export default function Header() {
     loadUser();
   }, [updated]);
 
+  // Dropdown/Outside Click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setDropdownOpen(false);
-      }
+      ) setDropdownOpen(false);
       if (
         profileDropdownRef.current &&
         !profileDropdownRef.current.contains(event.target as Node)
-      ) {
-        setProfileOpen(false);
-      }
+      ) setProfileOpen(false);
     }
-    if (dropdownOpen || profileOpen) {
+    if (dropdownOpen || profileOpen)
       document.addEventListener("mousedown", handleClickOutside);
-    } else {
+    else
       document.removeEventListener("mousedown", handleClickOutside);
-    }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownOpen, profileOpen]);
 
+  // Scrolled effect (optional for desktop transparency)
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
     return () => {
@@ -118,9 +118,7 @@ export default function Header() {
           document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
         });
       setUser(null);
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
+    } catch (error) {}
   }
 
   const navTextColor = "text-white";
@@ -129,17 +127,17 @@ export default function Header() {
 
   if (loading) {
     return (
-      <div>
-        <header className="fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-none border-b border-transparent shadow-none">
-          <div className="container mx-auto px-4 py-4 text-center text-white">Loading...</div>
-        </header>
-      </div>
+      <header className={`fixed top-0 left-0 right-0 z-50 bg-[#151f33]`}>
+        <div className="container mx-auto px-4 py-4 text-center text-white">Loading...</div>
+      </header>
     );
   }
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-lg border-b border-transparent shadow-none`}
+      className={`fixed top-0 left-0 right-0 z-50 ${
+        isAuthPage ? "bg-[#151f33]" : "bg-transparent"
+      } backdrop-blur-lg border-b border-transparent shadow-none`}
     >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
@@ -158,36 +156,27 @@ export default function Header() {
                 {/* Home */}
                 <NavigationMenuItem>
                   <Link href="/">
-                    <span
-                      className={`flex items-center gap-1 cursor-pointer px-3 py-2 rounded-full transition font-semibold text-base ${navTextColor} ${navHoverBg} ${navHoverTextColor}`}
-                    >
+                    <span className={`flex items-center gap-1 cursor-pointer px-3 py-2 rounded-full transition font-semibold text-base ${navTextColor} ${navHoverBg} ${navHoverTextColor}`}>
                       <Home className="w-4 h-4" /> Home
                     </span>
                   </Link>
                 </NavigationMenuItem>
-
                 {/* About */}
                 <NavigationMenuItem>
                   <Link href="/about">
-                    <span
-                      className={`flex items-center gap-1 cursor-pointer px-3 py-2 rounded-full transition font-semibold text-base ${navTextColor} ${navHoverBg} ${navHoverTextColor}`}
-                    >
+                    <span className={`flex items-center gap-1 cursor-pointer px-3 py-2 rounded-full transition font-semibold text-base ${navTextColor} ${navHoverBg} ${navHoverTextColor}`}>
                       <Info className="w-4 h-4" /> About
                     </span>
                   </Link>
                 </NavigationMenuItem>
-
                 {/* Explore */}
                 <NavigationMenuItem>
                   <Link href="/explore">
-                    <span
-                      className={`flex items-center gap-1 cursor-pointer px-3 py-2 rounded-full transition font-semibold text-base ${navTextColor} ${navHoverBg} ${navHoverTextColor}`}
-                    >
+                    <span className={`flex items-center gap-1 cursor-pointer px-3 py-2 rounded-full transition font-semibold text-base ${navTextColor} ${navHoverBg} ${navHoverTextColor}`}>
                       <Map className="w-4 h-4" /> Explore
                     </span>
                   </Link>
                 </NavigationMenuItem>
-
                 {/* Plan Dropdown */}
                 <NavigationMenuItem
                   className="relative"
@@ -225,7 +214,6 @@ export default function Header() {
                       ></path>
                     </svg>
                   </NavigationMenuTrigger>
-
                   {dropdownOpen && (
                     <div
                       className="absolute left-0 top-full mt-2 p-3 rounded-xl border border-cyan-400 bg-cyan-900/20 shadow-lg w-56 z-50 animate-fade-in-down"
@@ -236,11 +224,7 @@ export default function Header() {
                         {[
                           { path: "/flights", icon: Plane, label: "Flights" },
                           { path: "/hotels", icon: Hotel, label: "Hotels" },
-                          {
-                            path: "/events",
-                            icon: CalendarDays,
-                            label: "Events",
-                          },
+                          { path: "/events", icon: CalendarDays, label: "Events" },
                           { path: "/ar-vr", icon: Eye, label: "AR/VR" },
                         ].map(({ path, icon: Icon, label }) => (
                           <li key={path}>
@@ -259,24 +243,18 @@ export default function Header() {
                     </div>
                   )}
                 </NavigationMenuItem>
-
                 {/* Pricing */}
                 <NavigationMenuItem>
                   <Link href="/pricing">
-                    <span
-                      className={`flex items-center gap-1 cursor-pointer px-3 py-2 rounded-full transition font-semibold text-base ${navTextColor} ${navHoverBg} ${navHoverTextColor}`}
-                    >
+                    <span className={`flex items-center gap-1 cursor-pointer px-3 py-2 rounded-full transition font-semibold text-base ${navTextColor} ${navHoverBg} ${navHoverTextColor}`}>
                       <DollarSign className="w-4 h-4" /> Pricing
                     </span>
                   </Link>
                 </NavigationMenuItem>
-
                 {/* Feed */}
                 <NavigationMenuItem>
                   <Link href="/feed">
-                    <span
-                      className={`flex items-center gap-1 cursor-pointer px-3 py-2 rounded-full transition font-semibold text-base ${navTextColor} ${navHoverBg} ${navHoverTextColor}`}
-                    >
+                    <span className={`flex items-center gap-1 cursor-pointer px-3 py-2 rounded-full transition font-semibold text-base ${navTextColor} ${navHoverBg} ${navHoverTextColor}`}>
                       <Newspaper className="w-4 h-4" /> Feed
                     </span>
                   </Link>
@@ -306,7 +284,6 @@ export default function Header() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-
                 {profileOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-cyan-900/20 border border-cyan-400 rounded-xl shadow-lg z-50">
                     <Link href="/profile">
@@ -361,7 +338,7 @@ export default function Header() {
       {/* Mobile Menu: Only rendered if open */}
       {mobileMenuOpen && (
         <div
-          className="md:hidden fixed inset-x-0 top-16 bottom-0 z-40 bg-black/80 backdrop-blur-lg transition-transform duration-300 translate-y-0"
+          className="md:hidden fixed inset-x-0 top-16 bottom-0 z-40 bg-[#151f33] backdrop-blur-lg transition-transform duration-300 translate-y-0"
           style={{ pointerEvents: "auto" }}
         >
           <nav className="flex flex-col px-4 py-4 space-y-1">
@@ -390,8 +367,6 @@ export default function Header() {
                 <Map className="w-5 h-5" /> Explore
               </a>
             </Link>
-
-            {/* Plan Mobile Dropdown */}
             <details className="group">
               <summary className="flex items-center gap-2 px-3 py-3 rounded-md cursor-pointer font-semibold text-white hover:text-cyan-400 transition">
                 <Compass className="w-5 h-5" />
@@ -399,37 +374,25 @@ export default function Header() {
               </summary>
               <div className="flex flex-col pl-6 mt-1 space-y-1">
                 <Link href="/flights">
-                  <a
-                    className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                  <a className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer" onClick={() => setMobileMenuOpen(false)}>
                     <Plane className="w-5 h-5 text-cyan-400" />
                     Flights
                   </a>
                 </Link>
                 <Link href="/hotels">
-                  <a
-                    className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                  <a className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer" onClick={() => setMobileMenuOpen(false)}>
                     <Hotel className="w-5 h-5 text-cyan-400" />
                     Hotels
                   </a>
                 </Link>
                 <Link href="/events">
-                  <a
-                    className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                  <a className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer" onClick={() => setMobileMenuOpen(false)}>
                     <CalendarDays className="w-5 h-5 text-cyan-400" />
                     Events
                   </a>
                 </Link>
                 <Link href="/ar-vr">
-                  <a
-                    className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
+                  <a className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer" onClick={() => setMobileMenuOpen(false)}>
                     <Eye className="w-5 h-5 text-cyan-400" />
                     AR/VR
                   </a>
@@ -437,23 +400,15 @@ export default function Header() {
               </div>
             </details>
             <Link href="/pricing">
-              <a
-                className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <a className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg" onClick={() => setMobileMenuOpen(false)}>
                 <DollarSign className="w-5 h-5" /> Pricing
               </a>
             </Link>
             <Link href="/feed">
-              <a
-                className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <a className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg" onClick={() => setMobileMenuOpen(false)}>
                 <Newspaper className="w-5 h-5" /> Feed
               </a>
             </Link>
-
-            {/* Mobile User Profile or Sign Up / Sign In */}
             <div className="mt-4 flex flex-col gap-3 px-3">
               {user ? (
                 <>
@@ -464,44 +419,17 @@ export default function Header() {
                     <span className="font-medium text-sm">{user.full_name || user.email}</span>
                   </div>
                   <Link href="/profile">
-                    <Button
-                      variant="outline"
-                      className="w-full border border-cyan-400 text-cyan-400 hover:bg-cyan-900/20 hover:text-white transition-all duration-300"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Profile
-                    </Button>
+                    <Button variant="outline" className="w-full border border-cyan-400 text-cyan-400 hover:bg-cyan-900/20 hover:text-white transition-all duration-300" onClick={() => setMobileMenuOpen(false)}>Profile</Button>
                   </Link>
-                  <Button
-                    variant="outline"
-                    className="w-full border border-red-400 text-red-400 hover:bg-red-900/20 hover:text-white transition-all duration-300"
-                    onClick={() => {
-                      handleLogout();
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Log out
-                  </Button>
+                  <Button variant="outline" className="w-full border border-red-400 text-red-400 hover:bg-red-900/20 hover:text-white transition-all duration-300" onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>Log out</Button>
                 </>
               ) : (
                 <>
                   <Link href="/signup">
-                    <Button
-                      variant="default"
-                      className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold hover:from-cyan-500 hover:to-blue-600 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Sign Up
-                    </Button>
+                    <Button variant="default" className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold hover:from-cyan-500 hover:to-blue-600 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5" onClick={() => setMobileMenuOpen(false)}>Sign Up</Button>
                   </Link>
                   <Link href="/signin">
-                    <Button
-                      variant="outline"
-                      className="w-full border border-cyan-400 text-cyan-400 hover:bg-cyan-900/20 hover:text-white transition-all duration-300 transform hover:-translate-y-0.5"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Sign In
-                    </Button>
+                    <Button variant="outline" className="w-full border border-cyan-400 text-cyan-400 hover:bg-cyan-900/20 hover:text-white transition-all duration-300 transform hover:-translate-y-0.5" onClick={() => setMobileMenuOpen(false)}>Sign In</Button>
                   </Link>
                 </>
               )}
