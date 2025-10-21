@@ -47,7 +47,6 @@ export default function Header() {
   const { updated } = useUserStore();
   const dropdownRef = useRef<HTMLLIElement>(null);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function loadUser() {
@@ -65,7 +64,6 @@ export default function Header() {
         setLoading(false);
       }
     }
-
     loadUser();
   }, [updated]);
 
@@ -96,41 +94,14 @@ export default function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setScrolled(window.scrollY > 50);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-      mobileMenuRef.current?.classList.remove("animate-slide-up");
-      mobileMenuRef.current?.classList.add("animate-slide-down");
-      mobileMenuRef.current!.style.display = "block";
-    } else {
-      document.body.style.overflow = "";
-      if (
-        mobileMenuRef.current &&
-        mobileMenuRef.current.classList.contains("animate-slide-down")
-      ) {
-        mobileMenuRef.current.classList.remove("animate-slide-down");
-        mobileMenuRef.current.classList.add("animate-slide-up");
-        const timer = setTimeout(() => {
-          if (!mobileMenuOpen && mobileMenuRef.current) {
-            mobileMenuRef.current.style.display = "none";
-          }
-        }, 400);
-        return () => clearTimeout(timer);
-      } else if (mobileMenuRef.current) {
-        mobileMenuRef.current.style.display = "none";
-      }
-    }
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
@@ -152,7 +123,6 @@ export default function Header() {
     }
   }
 
-  // Text and hover styles - bright cyan scheme for all nav items except Plan which is handled separately
   const navTextColor = "text-white";
   const navHoverTextColor = "hover:text-cyan-400";
   const navHoverBg = "hover:bg-cyan-900/20";
@@ -160,9 +130,9 @@ export default function Header() {
   if (loading) {
     return (
       <div>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-none border-b border-transparent shadow-none">
-        <div className="container mx-auto px-4 py-4 text-center text-white">Loading...</div>
-      </header>
+        <header className="fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-none border-b border-transparent shadow-none">
+          <div className="container mx-auto px-4 py-4 text-center text-white">Loading...</div>
+        </header>
       </div>
     );
   }
@@ -388,158 +358,157 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Menu - always rendered, visibility controlled by classes */}
-      <div
-        ref={mobileMenuRef}
-        className={`md:hidden fixed inset-x-0 top-16 bottom-0 z-40 bg-black/80 backdrop-blur-lg transition-transform duration-300 ${
-          mobileMenuOpen ? "translate-y-0" : "-translate-y-full"
-        }`}
-        style={{ pointerEvents: mobileMenuOpen ? "auto" : "none" }}
-      >
-        <nav className="flex flex-col px-4 py-4 space-y-1">
-          {/* Mobile Nav Links */}
-          <Link href="/">
-            <a
-              className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Home className="w-5 h-5" /> Home
-            </a>
-          </Link>
-          <Link href="/about">
-            <a
-              className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Info className="w-5 h-5" /> About
-            </a>
-          </Link>
-          <Link href="/explore">
-            <a
-              className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Map className="w-5 h-5" /> Explore
-            </a>
-          </Link>
+      {/* Mobile Menu: Only rendered if open */}
+      {mobileMenuOpen && (
+        <div
+          className="md:hidden fixed inset-x-0 top-16 bottom-0 z-40 bg-black/80 backdrop-blur-lg transition-transform duration-300 translate-y-0"
+          style={{ pointerEvents: "auto" }}
+        >
+          <nav className="flex flex-col px-4 py-4 space-y-1">
+            {/* Mobile Nav Links */}
+            <Link href="/">
+              <a
+                className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Home className="w-5 h-5" /> Home
+              </a>
+            </Link>
+            <Link href="/about">
+              <a
+                className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Info className="w-5 h-5" /> About
+              </a>
+            </Link>
+            <Link href="/explore">
+              <a
+                className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Map className="w-5 h-5" /> Explore
+              </a>
+            </Link>
 
-          {/* Plan Mobile Dropdown */}
-          <details className="group">
-            <summary className="flex items-center gap-2 px-3 py-3 rounded-md cursor-pointer font-semibold text-white hover:text-cyan-400 transition">
-              <Compass className="w-5 h-5" />
-              Plan
-            </summary>
-            <div className="flex flex-col pl-6 mt-1 space-y-1">
-              <Link href="/flights">
-                <a
-                  className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Plane className="w-5 h-5 text-cyan-400" />
-                  Flights
-                </a>
-              </Link>
-              <Link href="/hotels">
-                <a
-                  className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Hotel className="w-5 h-5 text-cyan-400" />
-                  Hotels
-                </a>
-              </Link>
-              <Link href="/events">
-                <a
-                  className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <CalendarDays className="w-5 h-5 text-cyan-400" />
-                  Events
-                </a>
-              </Link>
-              <Link href="/ar-vr">
-                <a
-                  className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <Eye className="w-5 h-5 text-cyan-400" />
-                  AR/VR
-                </a>
-              </Link>
+            {/* Plan Mobile Dropdown */}
+            <details className="group">
+              <summary className="flex items-center gap-2 px-3 py-3 rounded-md cursor-pointer font-semibold text-white hover:text-cyan-400 transition">
+                <Compass className="w-5 h-5" />
+                Plan
+              </summary>
+              <div className="flex flex-col pl-6 mt-1 space-y-1">
+                <Link href="/flights">
+                  <a
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Plane className="w-5 h-5 text-cyan-400" />
+                    Flights
+                  </a>
+                </Link>
+                <Link href="/hotels">
+                  <a
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Hotel className="w-5 h-5 text-cyan-400" />
+                    Hotels
+                  </a>
+                </Link>
+                <Link href="/events">
+                  <a
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <CalendarDays className="w-5 h-5 text-cyan-400" />
+                    Events
+                  </a>
+                </Link>
+                <Link href="/ar-vr">
+                  <a
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-white hover:text-cyan-400 hover:bg-cyan-900/20 font-medium transition cursor-pointer"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Eye className="w-5 h-5 text-cyan-400" />
+                    AR/VR
+                  </a>
+                </Link>
+              </div>
+            </details>
+            <Link href="/pricing">
+              <a
+                className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <DollarSign className="w-5 h-5" /> Pricing
+              </a>
+            </Link>
+            <Link href="/feed">
+              <a
+                className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Newspaper className="w-5 h-5" /> Feed
+              </a>
+            </Link>
+
+            {/* Mobile User Profile or Sign Up / Sign In */}
+            <div className="mt-4 flex flex-col gap-3 px-3">
+              {user ? (
+                <>
+                  <div className="flex items-center gap-2 px-3 py-2 text-white">
+                    <span className="inline-block w-9 h-9 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center font-bold text-white text-sm">
+                      {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
+                    </span>
+                    <span className="font-medium text-sm">{user.full_name || user.email}</span>
+                  </div>
+                  <Link href="/profile">
+                    <Button
+                      variant="outline"
+                      className="w-full border border-cyan-400 text-cyan-400 hover:bg-cyan-900/20 hover:text-white transition-all duration-300"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Profile
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="outline"
+                    className="w-full border border-red-400 text-red-400 hover:bg-red-900/20 hover:text-white transition-all duration-300"
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Log out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link href="/signup">
+                    <Button
+                      variant="default"
+                      className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold hover:from-cyan-500 hover:to-blue-600 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Sign Up
+                    </Button>
+                  </Link>
+                  <Link href="/signin">
+                    <Button
+                      variant="outline"
+                      className="w-full border border-cyan-400 text-cyan-400 hover:bg-cyan-900/20 hover:text-white transition-all duration-300 transform hover:-translate-y-0.5"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
-          </details>
-          <Link href="/pricing">
-            <a
-              className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <DollarSign className="w-5 h-5" /> Pricing
-            </a>
-          </Link>
-          <Link href="/feed">
-            <a
-              className="flex items-center gap-2 block px-3 py-3 rounded-md hover:text-cyan-400 transition font-semibold text-white text-lg"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Newspaper className="w-5 h-5" /> Feed
-            </a>
-          </Link>
-
-          {/* Mobile User Profile or Sign Up / Sign In */}
-          <div className="mt-4 flex flex-col gap-3 px-3">
-            {user ? (
-              <>
-                <div className="flex items-center gap-2 px-3 py-2 text-white">
-                  <span className="inline-block w-9 h-9 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center font-bold text-white text-sm">
-                    {user.full_name?.charAt(0).toUpperCase() || user.email.charAt(0).toUpperCase()}
-                  </span>
-                  <span className="font-medium text-sm">{user.full_name || user.email}</span>
-                </div>
-                <Link href="/profile">
-                  <Button
-                    variant="outline"
-                    className="w-full border border-cyan-400 text-cyan-400 hover:bg-cyan-900/20 hover:text-white transition-all duration-300"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Profile
-                  </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  className="w-full border border-red-400 text-red-400 hover:bg-red-900/20 hover:text-white transition-all duration-300"
-                  onClick={() => {
-                    handleLogout();
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  Log out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Link href="/signup">
-                  <Button
-                    variant="default"
-                    className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-bold hover:from-cyan-500 hover:to-blue-600 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Sign Up
-                  </Button>
-                </Link>
-                <Link href="/signin">
-                  <Button
-                    variant="outline"
-                    className="w-full border border-cyan-400 text-cyan-400 hover:bg-cyan-900/20 hover:text-white transition-all duration-300 transform hover:-translate-y-0.5"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Sign In
-                  </Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </nav>
-      </div>
+          </nav>
+        </div>
+      )}
     </header>
   );
 }
