@@ -8,4 +8,4 @@ Disallow: /api/
 Disallow: /dashboard/
 
 # Point to the sitemap for this subdomain
-Sitemap: https://try.triponic.com/sitemap.xml
+Sitemap: https://triponic.com/sitemap.xml
