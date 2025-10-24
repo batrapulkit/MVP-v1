@@ -18,10 +18,25 @@ import {
   Loader2
 } from 'lucide-react';
 
-export const supabase = createClient(
-  'https://ktojsokydntrdbbpttsa.supabase.co',
-  'YOUR_PUBLIC_ANON_KEY'
-);
+// Use environment variables - works in both local and production
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ktojsokydntrdbbpttsa.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Debug logging (remove in production)
+console.log('Supabase URL:', supabaseUrl);
+console.log('Has Anon Key:', !!supabaseAnonKey);
+
+if (!supabaseAnonKey) {
+  console.error('Missing VITE_SUPABASE_ANON_KEY environment variable');
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey || '');
+
+// Get current origin - works for both localhost and production
+const getRedirectUrl = (redirect: string) => {
+  const origin = window.location.origin;
+  return `${origin}/auth/callback?redirect=${encodeURIComponent(redirect)}`;
+};
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -97,17 +112,25 @@ export default function SignIn() {
   };
 
   const handleGoogleSignIn = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `http://127.0.0.1:2000/auth/callback?redirect=${encodeURIComponent(redirect)}`,
-      },
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: getRedirectUrl(redirect),
+        },
+      });
 
-    if (error) {
+      if (error) {
+        toast({
+          title: 'Google sign in failed',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
       toast({
         title: 'Google sign in failed',
-        description: error.message,
+        description: error?.message || 'An error occurred during Google sign in',
         variant: 'destructive',
       });
     }
