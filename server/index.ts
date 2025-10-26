@@ -6,10 +6,11 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { registerRoutes } from "./src/routes/registerRoutes";
 import { setupVite, serveStatic, log } from "./vite";
-// 🔹 Load environment variables
+
+// === Load environment variables ===
 dotenv.config();
 
-// 🔹 Allowed origins (local + production)
+// === Allowed origins ===
 const allowedOrigins = [
   "https://triponic.com",
   "https://www.triponic.com",
@@ -17,7 +18,7 @@ const allowedOrigins = [
   "http://127.0.0.1:2000",
 ];
 
-// 🔹 Updated and stable CORS configuration
+// === CORS configuration ===
 const corsOptions = {
   origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -29,21 +30,15 @@ const corsOptions = {
 (async () => {
   const app = express();
 
-  // === Core Middleware ===
+  // === Core middleware ===
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
-
-  // === CORS Setup ===
   app.use(cors(corsOptions));
-  app.options("*", cors(corsOptions)); // Handle preflight requests for all routes
+  app.options("*", cors(corsOptions)); // Handle preflight requests
 
-  // === TEMP AUTH TEST ROUTES (for login debugging) ===
-  // ⚠️ Optional: remove or move later
-  import bcrypt from "bcryptjs";
-  import jwt from "jsonwebtoken";
-
-  // In-memory store just for testing
+  // === TEMP: Basic auth system (for now) ===
+  // You can replace this with Supabase later
   const users: any[] = [];
 
   app.post("/api/register", async (req: Request, res: Response) => {
@@ -57,6 +52,7 @@ const corsOptions = {
 
     const hashed = await bcrypt.hash(password, 10);
     users.push({ email, password: hashed });
+
     res.status(201).json({ message: "User registered" });
   });
 
@@ -72,7 +68,7 @@ const corsOptions = {
       expiresIn: "7d",
     });
 
-    // ✅ Correct cookie setup
+    // ✅ Correct cookie config for cross-domain + HTTPS
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -89,10 +85,11 @@ const corsOptions = {
     res.json({ message: "Logged out" });
   });
 
-  // ✅ Auth test route
+  // === Test route to verify login ===
   app.get("/api/me", (req: Request, res: Response) => {
     const token = req.cookies.token;
     if (!token) return res.status(401).json({ message: "No token" });
+
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
       res.json({ message: "Authenticated", user: decoded });
@@ -112,8 +109,7 @@ const corsOptions = {
   } else {
     serveStatic(app);
     app.get("*", (req: Request, res: Response) => {
-      // ⚠️ Ensure correct build directory
-      res.sendFile("index.html", { root: "dist" });
+      res.sendFile("index.html", { root: "dist" }); // ✅ Correct path for Vite build
     });
   }
 
