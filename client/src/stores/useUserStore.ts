@@ -1,5 +1,4 @@
-// src/stores/useUserStore.ts
-
+// stores/useUserStore.ts
 import { create } from 'zustand';
 
 type UserStore = {
@@ -9,8 +8,5 @@ type UserStore = {
 
 export const useUserStore = create<UserStore>((set) => ({
   updated: Date.now(),
-  triggerUpdate: () => {
-    console.log('🔔 Triggering user update');
-    set({ updated: Date.now() });
-  },
+  triggerUpdate: () => set({ updated: Date.now() }),
 }));
