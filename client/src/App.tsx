@@ -1,7 +1,11 @@
+// src/App.tsx
+
+import { useEffect } from 'react';
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
+import { supabase } from '@/api/client';
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import MyTrips from "@/pages/MyTrips";
@@ -93,6 +97,28 @@ function Router() {
 
 function App() {
   const { locationError } = useUserLocation();
+
+  useEffect(() => {
+    console.log('🚀 App initialized - Setting up Supabase auth listener');
+
+    // Listen for Supabase auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🔐 Supabase auth event:', event);
+      
+      if (event === 'SIGNED_IN') {
+        console.log('✅ User signed in with Supabase');
+      } else if (event === 'SIGNED_OUT') {
+        console.log('🔓 User signed out from Supabase');
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log('🔄 Supabase token refreshed');
+      }
+    });
+
+    return () => {
+      console.log('🧹 Cleaning up Supabase auth subscription');
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return (
     <WouterRouter>
