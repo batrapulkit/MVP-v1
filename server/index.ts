@@ -1,70 +1,61 @@
-import express, { type Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
-import { registerRoutes } from "./src/routes/registerRoutes"; // API routes
-import { setupVite, serveStatic, log } from "./vite";
 import cors from "cors";
-
 import dotenv from "dotenv";
+import { registerRoutes } from "./src/routes/registerRoutes";
+import { setupVite, serveStatic, log } from "./vite";
+
 dotenv.config();
 
 (async () => {
-  // === API SERVER ===
-  const apiApp = express();
+  const app = express();
 
-  // Parse JSON and URL-encoded bodies
-  apiApp.use(express.json());
-  apiApp.use(express.urlencoded({ extended: false }));
+  // === Middleware ===
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
+  app.use(cookieParser());
 
-  // IMPORTANT: cookieParser must come BEFORE cors and routes
-  apiApp.use(cookieParser());
-
-  // Setup CORS - must come AFTER cookieParser for credentials to work
-  apiApp.use(
+  // CORS setup — adjust this dynamically for production
+  app.use(
     cors({
-      origin: "http://127.0.0.1:2000", // frontend origin
-      credentials: true, // allow cookies to be sent
+      origin: process.env.CLIENT_URL || "*",
+      credentials: true,
     })
   );
 
-  // Mount your API routes AFTER cookieParser and cors
-  await registerRoutes(apiApp);
+  // === API Routes ===
+  await registerRoutes(app);
 
-  // Error handling middleware
-  apiApp.use(
-    (err: any, _req: Request, res: Response, _next: NextFunction) => {
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      if (!res.headersSent) {
-        res.status(status).json({ message });
-      }
-      console.error(err);
-    }
-  );
-
-  const http = await import("http");
-  const apiServer = http.createServer(apiApp);
-
-  const apiPort = 3001; // API port
-  const host = "127.0.0.1";
-
-  apiServer.listen(apiPort, host, () => {
-    log(`✅ API Server running at http://${host}:${apiPort}`);
-  });
-
-  // === FRONTEND / STATIC SERVER ===
-  const frontendApp = express();
-
-  if (frontendApp.get("env") === "development") {
-    const frontendHttp = await import("http");
-    const frontendServer = frontendHttp.createServer(frontendApp);
-    await setupVite(frontendApp, frontendServer); // pass server instance
+  // === Static Frontend ===
+  if (app.get("env") === "development") {
+    const http = await import("http");
+    const server = http.createServer(app);
+    await setupVite(app, server);
   } else {
-    serveStatic(frontendApp);
+    // Serve built frontend
+    serveStatic(app);
+
+    // fallback for SPA routing
+    app.get("*", (req: Request, res: Response) => {
+      res.sendFile("index.html", { root: "dist/public" });
+    });
   }
 
-  const frontendPort = 2000; // Frontend port
+  // === Error Handling ===
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    if (!res.headersSent) {
+      res.status(status).json({ message });
+    }
+    console.error(err);
+  });
 
-  frontendApp.listen(frontendPort, host, () => {
-    log(`✅ Frontend Server running at http://${host}:${frontendPort}`);
+  // === Server Start ===
+  const PORT = process.env.PORT || 8080;
+  const HOST = "0.0.0.0";
+
+  app.listen(PORT, HOST, () => {
+    log(`✅ Server running at http://${HOST}:${PORT}`);
   });
 })();
