@@ -18,7 +18,7 @@ dotenv.config();
   // CORS setup — adjust this dynamically for production
   app.use(
     cors({
-      origin: process.env.CLIENT_URL || "*",
+      origin: "https://triponic.com",
       credentials: true,
     })
   );
