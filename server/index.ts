@@ -7,21 +7,31 @@ import { setupVite, serveStatic, log } from "./vite";
 
 dotenv.config();
 
+const allowedOrigins = [
+  "https://triponic.com",
+  "https://www.triponic.com",
+  "http://localhost:3000"  // for dev
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // mobile apps, curl etc
+    if (allowedOrigins.indexOf(origin) === -1) {
+      return callback(new Error("CORS not allowed from: " + origin), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+};
+
 (async () => {
   const app = express();
 
-  // === Middleware ===
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
 
-  // CORS setup — adjust this dynamically for production
-  app.use(
-    cors({
-      origin: "https://triponic.com",
-      credentials: true,
-    })
-  );
+  app.use(cors(corsOptions));
 
   // === API Routes ===
   await registerRoutes(app);
@@ -32,10 +42,7 @@ dotenv.config();
     const server = http.createServer(app);
     await setupVite(app, server);
   } else {
-    // Serve built frontend
     serveStatic(app);
-
-    // fallback for SPA routing
     app.get("*", (req: Request, res: Response) => {
       res.sendFile("index.html", { root: "dist/public" });
     });
@@ -54,7 +61,6 @@ dotenv.config();
   // === Server Start ===
   const PORT = process.env.PORT || 8080;
   const HOST = "0.0.0.0";
-
   app.listen(PORT, HOST, () => {
     log(`✅ Server running at http://${HOST}:${PORT}`);
   });
