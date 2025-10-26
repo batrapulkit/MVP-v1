@@ -1,85 +1,73 @@
-import express, { type Request, Response, NextFunction } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
-import { registerRoutes } from "./src/routes/registerRoutes";
-import { setupVite, serveStatic, log } from "./vite";
 import cors from "cors";
 import dotenv from "dotenv";
+import { registerRoutes } from "./src/routes/registerRoutes"; // Your API routes
+import { setupVite, serveStatic, log } from "./vite";
 
 dotenv.config();
 
-// --- Log key environment values (safe) ---
-console.log("🧩 Environment loaded:", {
-  NODE_ENV: process.env.NODE_ENV,
-  JWT_SECRET: !!process.env.JWT_SECRET,
-  SUPABASE_URL: !!process.env.SUPABASE_URL,
-  SUPABASE_KEY: !!process.env.SUPABASE_KEY,
-  FRONTEND_URL: process.env.FRONTEND_URL,
-});
-
 (async () => {
-  const app = express();
+  // === API SERVER ===
+  const apiApp = express();
 
-  // --- Parse request bodies ---
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: false }));
+  // Parse JSON and URL-encoded bodies
+  apiApp.use(express.json());
+  apiApp.use(express.urlencoded({ extended: false }));
 
-  // --- Cookie parser must come early ---
-  app.use(cookieParser());
+  // cookieParser BEFORE cors and routes
+  apiApp.use(cookieParser());
 
-  // --- Configure allowed origins (CORS whitelist) ---
-  // This covers localhost (dev), App Platform preview, and your production domain.
-  const allowedOrigins = [
-    "http://127.0.0.1:2000",
-    "http://localhost:5000",
-    "https://shark-app-fyixd.ondigitalocean.app",
-    "https://triponic.com",
-    "https://www.triponic.com",
-    process.env.FRONTEND_URL, // for extra flexibility
-  ].filter(Boolean);
-
-  app.use(
+  // === FIXED CORS CONFIG ===
+  apiApp.use(
     cors({
-      origin: (origin, callback) => {
-        // allow same-origin or server-side requests (no Origin header)
-        if (!origin) return callback(null, true);
-
-        if (allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          console.warn("🚫 CORS blocked:", origin);
-          callback(new Error("Not allowed by CORS"));
-        }
-      },
-      credentials: true,
+      origin: [
+        "http://127.0.0.1:2000",
+        "http://localhost:2000",
+        "https://triponic.com", // main production domain
+        // "https://shark-app-fyixd.ondigitalocean.app", // DigitalOcean frontend URL (MUST include https://)
+      ],
+      credentials: true, // required for cookies to work cross-origin
     })
   );
 
-  // --- Mount your API routes ---
-  await registerRoutes(app);
+  // Mount all API routes
+  await registerRoutes(apiApp);
 
-  // --- Environment-specific behavior ---
-  if (process.env.NODE_ENV === "development") {
-    const { createServer } = await import("http");
-    const server = createServer(app);
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
+  // === ERROR HANDLER ===
+  apiApp.use(
+    (err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      if (!res.headersSent) {
+        res.status(status).json({ message });
+      }
+      console.error("❌ Server Error:", err);
+    }
+  );
 
-  // --- Global error handler ---
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || 500;
-    const message = err.message || "Internal Server Error";
-    if (!res.headersSent) res.status(status).json({ message });
-    console.error("❌ Server Error:", err);
+  // === START API SERVER ===
+  const apiPort = process.env.PORT || 3001;
+  const host = "0.0.0.0"; // important for DigitalOcean
+
+  apiApp.listen(apiPort, host, () => {
+    log(`✅ API Server running on http://${host}:${apiPort}`);
   });
 
-  // --- Start server ---
-  const PORT = parseInt(process.env.PORT || "8080", 10);
-  const HOST = process.env.HOST || "0.0.0.0";
+  // === FRONTEND SERVER ===
+  const frontendApp = express();
 
-  app.listen(PORT, HOST, () => {
-    log(`✅ Server running at http://${HOST}:${PORT}`);
-    log(`📦 Environment: ${process.env.NODE_ENV || "development"}`);
+  if (frontendApp.get("env") === "development") {
+    const frontendHttp = await import("http");
+    const frontendServer = frontendHttp.createServer(frontendApp);
+    await setupVite(frontendApp, frontendServer); // Vite dev setup
+  } else {
+    serveStatic(frontendApp); // Serve built frontend in production
+  }
+
+  const frontendPort = 2000;
+
+  frontendApp.listen(frontendPort, "0.0.0.0", () => {
+    log(`✅ Frontend Server running on http://0.0.0.0:${frontendPort}`);
   });
 })();
