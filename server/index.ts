@@ -1,10 +1,10 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { type Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
-import cors from "cors";
-import dotenv from "dotenv";
-import { registerRoutes } from "./src/routes/registerRoutes"; // Your API routes
+import { registerRoutes } from "./src/routes/registerRoutes"; // API routes
 import { setupVite, serveStatic, log } from "./vite";
+import cors from "cors";
 
+import dotenv from "dotenv";
 dotenv.config();
 
 (async () => {
@@ -15,26 +15,21 @@ dotenv.config();
   apiApp.use(express.json());
   apiApp.use(express.urlencoded({ extended: false }));
 
-  // cookieParser BEFORE cors and routes
+  // IMPORTANT: cookieParser must come BEFORE cors and routes
   apiApp.use(cookieParser());
 
-  // === FIXED CORS CONFIG ===
+  // Setup CORS - must come AFTER cookieParser for credentials to work
   apiApp.use(
     cors({
-      origin: [
-        "http://127.0.0.1:2000",
-        "http://localhost:2000",
-        "https://triponic.com", // main production domain
-        "https://shark-app-fyixd.ondigitalocean.app", // DigitalOcean frontend URL (MUST include https://)
-      ],
-      credentials: true, // required for cookies to work cross-origin
+      origin: "http://127.0.0.1:2000", // frontend origin
+      credentials: true, // allow cookies to be sent
     })
   );
 
-  // Mount all API routes
+  // Mount your API routes AFTER cookieParser and cors
   await registerRoutes(apiApp);
 
-  // === ERROR HANDLER ===
+  // Error handling middleware
   apiApp.use(
     (err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
@@ -42,32 +37,34 @@ dotenv.config();
       if (!res.headersSent) {
         res.status(status).json({ message });
       }
-      console.error("❌ Server Error:", err);
+      console.error(err);
     }
   );
 
-  // === START API SERVER ===
-  const apiPort = process.env.PORT || 3001;
-  const host = "0.0.0.0"; // important for DigitalOcean
+  const http = await import("http");
+  const apiServer = http.createServer(apiApp);
 
-  apiApp.listen(apiPort, host, () => {
-    log(`✅ API Server running on http://${host}:${apiPort}`);
+  const apiPort = 3001; // API port
+  const host = "127.0.0.1";
+
+  apiServer.listen(apiPort, host, () => {
+    log(`✅ API Server running at http://${host}:${apiPort}`);
   });
 
-  // === FRONTEND SERVER ===
+  // === FRONTEND / STATIC SERVER ===
   const frontendApp = express();
 
   if (frontendApp.get("env") === "development") {
     const frontendHttp = await import("http");
     const frontendServer = frontendHttp.createServer(frontendApp);
-    await setupVite(frontendApp, frontendServer); // Vite dev setup
+    await setupVite(frontendApp, frontendServer); // pass server instance
   } else {
-    serveStatic(frontendApp); // Serve built frontend in production
+    serveStatic(frontendApp);
   }
 
-  const frontendPort = 2000;
+  const frontendPort = 2000; // Frontend port
 
-  frontendApp.listen(frontendPort, "0.0.0.0", () => {
-    log(`✅ Frontend Server running on http://0.0.0.0:${frontendPort}`);
+  frontendApp.listen(frontendPort, host, () => {
+    log(`✅ Frontend Server running at http://${host}:${frontendPort}`);
   });
 })();
