@@ -6,11 +6,11 @@ import { registerRoutes } from "./src/routes/registerRoutes";
 import { setupVite, serveStatic, log } from "./vite";
 
 dotenv.config();
-
 const allowedOrigins = [
   "https://triponic.com",
   "https://www.triponic.com",
-  "http://localhost:3000"  // for dev
+  "http://localhost:2000",
+  "http://127.0.0.1:2000"
 ];
 
 const corsOptions = {
