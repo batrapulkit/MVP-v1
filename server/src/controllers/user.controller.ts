@@ -1,123 +1,149 @@
-import { Request, Response } from "express";
-import { supabase } from "../config/supabase";
-import { User } from "../models/user.model";
-import { v4 as uuidv4 } from "uuid";
-import jwt from "jsonwebtoken";
-import { config } from "../config/env";
-import bcrypt from "bcrypt";
+import { Request, Response } from 'express';
+import { supabase } from '../config/supabase';
+import { User } from '../models/user.model';
+import { v4 as uuidv4 } from 'uuid';
+import jwt from 'jsonwebtoken';
+import { config } from '../config/env';
+import bcrypt from 'bcrypt';
 
-// ========== Helper ========== //
-const setAuthCookie = (res: Response, token: string) => {
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // true only on HTTPS
-    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    path: "/",
-  });
-};
-
-// ========== GET ALL USERS ========== //
 export const getAllUsers = async (_req: Request, res: Response) => {
-  const { data, error } = await supabase.from("users").select("*");
+  const { data, error } = await supabase.from('users').select('*');
 
-  if (error)
-    return res
-      .status(500)
-      .json({ status: 500, message: error.message, data: [] });
+  if (error) {
+    return res.status(500).json({
+      status: 500,
+      message: error.message,
+      data: [],
+    });
+  }
 
   res.status(200).json({
     status: 200,
-    message: "Users fetched successfully",
+    message: 'Users fetched successfully',
     data: data || [],
   });
 };
-
-// ========== REGISTER USER ========== //
 export const createUser = async (req: Request, res: Response) => {
   try {
-    const body: Omit<User, "user_id"> = req.body;
+    const body: Omit<User, 'user_id'> = req.body;
 
-    if (body.auth_type === "email" && !body.password) {
-      return res
-        .status(400)
-        .json({ status: 400, message: "Password is required", data: [] });
+    // For email-based accounts, enforce password
+    if (body.auth_type === 'email' && !body.password) {
+      return res.status(400).json({
+        status: 400,
+        message: 'Password is required for email users',
+        data: [],
+      });
     }
 
-    const hashedPassword = body.password
-      ? await bcrypt.hash(body.password, 10)
-      : "";
+    // Hash password if provided
+    let hashedPassword: string | null = null;
+    if (body.password) {
+      hashedPassword = await bcrypt.hash(body.password, 10);
+    }
 
-    const newUser: User = { ...body, password: hashedPassword, user_id: uuidv4() };
+    const newUser: User = {
+      ...body,
+      password: hashedPassword || '',
+      user_id: uuidv4(),
+    };
 
-    const { data, error } = await supabase.from("users").insert([newUser]);
+    const { data, error } = await supabase.from('users').insert([newUser]);
 
     if (error) {
-      let message = "Failed to create user";
-      if (error.code === "23505") {
-        if (error.message.includes("email"))
-          message = "This email is already registered";
-        else if (error.message.includes("user_name"))
-          message = "This username is already taken";
+      let message = 'Failed to create user';
+
+      // Handle duplicate key errors (Postgres error codes like 23505)
+      if (error.code === '23505') {
+        if (error.message.includes('email')) {
+          message = 'This email is already registered';
+        } else if (error.message.includes('user_name')) {
+          message = 'This username is already taken';
+        } else {
+          message = 'Duplicate value exists';
+        }
+      } else if (error.code === '23502') {
+        message = 'Missing required field';
+      } else if (error.message) {
+        message = error.message;
       }
-      return res.status(400).json({ status: 400, message, data: [] });
+
+      return res.status(400).json({
+        status: 400,
+        message,
+        data: [],
+      });
     }
 
     res.status(201).json({
       status: 201,
-      message: "User created successfully",
+      message: 'User created successfully',
       data: data || [],
     });
   } catch (err: any) {
     res.status(500).json({
       status: 500,
-      message: err?.message || "Internal server error",
+      message: err?.message || 'Internal server error',
       data: [],
     });
   }
 };
 
-// ========== LOGIN USER ========== //
+
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  if (!email || !password)
-    return res
-      .status(400)
-      .json({ status: 400, message: "Email and password required" });
+
+  if (!email || !password) {
+    return res.status(400).json({ status: 400, message: 'Email and password required' });
+  }
 
   const { data: user, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("email", email)
+    .from('users')
+    .select('*')
+    .eq('email', email)
     .single();
 
-  if (error || !user)
-    return res
-      .status(401)
-      .json({ status: 401, message: "Invalid email or password" });
+  if (error || !user) {
+    return res.status(401).json({ status: 401, message: 'Invalid email or password' });
+  }
 
   const isValid = await bcrypt.compare(password, user.password);
-  if (!isValid)
-    return res
-      .status(401)
-      .json({ status: 401, message: "Invalid email or password" });
+  if (!isValid) {
+    return res.status(401).json({ status: 401, message: 'Invalid email or password' });
+  }
 
-  if (!config.jwtSecret)
-    return res
-      .status(500)
-      .json({ status: 500, message: "JWT secret is not defined" });
+  if (!config.jwtSecret) {
+    return res.status(500).json({ status: 500, message: 'JWT secret is not defined' });
+  }
 
-  const token = jwt.sign(
-    { user_id: user.user_id, email: user.email, role_type: user.role_type },
-    config.jwtSecret,
-    { expiresIn: config.jwtExpiresIn }
-  );
+  if (!config.jwtSecret) {
+  return res.status(500).json({ status: 500, message: 'JWT secret is not defined' });
+}
 
-  setAuthCookie(res, token);
+const token = jwt.sign(
+  {
+    user_id: user.user_id,
+    email: user.email,
+    role_type: user.role_type,
+  },
+  config.jwtSecret as string, // cast to string to satisfy TS
+  { expiresIn: config.jwtExpiresIn as string } // cast expiresIn to string
+);
 
+  // Set HttpOnly cookie with token
+res.cookie('token', token, {
+  httpOnly: true,
+  secure: false,
+  maxAge: 1000 * 60 * 60,
+  sameSite: 'lax',
+  path: '/',
+});
+
+
+  // Respond with user data only, NOT token
   res.status(200).json({
     status: 200,
-    message: "Login successful",
+    message: 'Login successful',
     data: {
       user: {
         user_id: user.user_id,
@@ -125,69 +151,78 @@ export const loginUser = async (req: Request, res: Response) => {
         full_name: user.full_name,
         role_type: user.role_type,
         is_active: user.is_active,
-      },
-    },
+      }
+    }
   });
 };
 
-// ========== GET CURRENT USER ========== //
 export const getCurrentUser = async (req: Request, res: Response) => {
   const decoded = (req as any).user;
-  if (!decoded)
-    return res.status(401).json({ status: 401, message: "Not authenticated" });
 
+  if (!decoded) {
+    return res.status(401).json({ status: 401, message: 'Not authenticated' });
+  }
+
+  // Fetch full user data from Supabase by user_id
   const { data: user, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("user_id", decoded.user_id)
+    .from('users')
+    .select('*')
+    .eq('user_id', decoded.user_id)
     .single();
 
-  if (error || !user)
-    return res.status(404).json({ status: 404, message: "User not found" });
+  if (error || !user) {
+    return res.status(404).json({ status: 404, message: 'User not found' });
+  }
 
   return res.status(200).json({
     status: 200,
-    message: "User is logged in",
+    message: 'User is logged in',
     data: { user },
   });
 };
 
-// ========== GOOGLE LOGIN USER ========== //
+
+
 export const googleLoginUser = async (req: Request, res: Response) => {
   const { email } = req.body;
-  if (!email)
-    return res.status(400).json({ status: 400, message: "Email is required" });
 
-  const { data: emailUser } = await supabase
-    .from("users")
-    .select("*")
-    .eq("email", email)
-    .eq("auth_type", "email")
+  if (!email) {
+    return res.status(400).json({ status: 400, message: 'Email is required' });
+  }
+
+  // Check if email is already registered as a normal email account
+  const { data: emailUser, error: emailUserError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', email)
+    .eq('auth_type', 'email')
     .single();
 
-  if (emailUser)
+  if (emailUser) {
     return res.status(400).json({
       status: 400,
-      message:
-        "This email is already registered with email/password. Use normal login instead.",
+      message: 'This email is already registered with email/password. Use normal login instead.',
     });
+  }
 
+  // Now check if the user exists with Google auth
   const { data: googleUser, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("email", email)
-    .eq("auth_type", "google_auth")
+    .from('users')
+    .select('*')
+    .eq('email', email)
+    .eq('auth_type', 'google_auth')
     .single();
 
-  if (error || !googleUser)
-    return res
-      .status(401)
-      .json({ status: 401, message: "User not found or not registered via Google" });
+  if (error || !googleUser) {
+    return res.status(401).json({
+      status: 401,
+      message: 'User not found or not registered via Google',
+    });
+  }
 
-  if (!config.jwtSecret)
-    return res
-      .status(500)
-      .json({ status: 500, message: "JWT secret is not defined" });
+  if (!config.jwtSecret) {
+    return res.status(500).json({ status: 500, message: 'JWT secret is not defined' });
+  }
 
   const token = jwt.sign(
     {
@@ -199,11 +234,18 @@ export const googleLoginUser = async (req: Request, res: Response) => {
     { expiresIn: config.jwtExpiresIn }
   );
 
-  setAuthCookie(res, token);
+  // Set HttpOnly cookie with token
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: false,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    sameSite: 'lax',
+    path: '/',
+  });
 
   return res.status(200).json({
     status: 200,
-    message: "Google login successful",
+    message: 'Google login successful',
     data: {
       user: {
         user_id: googleUser.user_id,
@@ -211,114 +253,132 @@ export const googleLoginUser = async (req: Request, res: Response) => {
         full_name: googleUser.full_name,
         role_type: googleUser.role_type,
         is_active: googleUser.is_active,
-      },
-    },
+      }
+    }
   });
 };
 
-// ========== UPDATE PROFILE ========== //
+
+
+// controllers/user.controller.ts
 export const updateUserProfile = async (req: Request, res: Response) => {
   const decoded = (req as any).user;
-  if (!decoded)
-    return res.status(401).json({ status: 401, message: "Not authenticated" });
+
+  if (!decoded) {
+    return res.status(401).json({ status: 401, message: 'Not authenticated' });
+  }
 
   const body = req.body;
+
+  // Update allowed fields only
   const allowedFields = [
-    "full_name",
-    "first_name",
-    "last_name",
-    "phone",
-    "city",
-    "state",
-    "pincode",
-    "age",
-    "status",
-    "is_active",
+    'full_name',
+    'first_name',
+    'last_name',
+    'phone',
+    'city',
+    'state',
+    'pincode',
+    'age',
+    'status',
+    'is_active',
   ];
 
   const updates: any = {};
   for (const key of allowedFields) {
-    if (body[key] !== undefined) updates[key] = body[key];
+    if (body[key] !== undefined) {
+      updates[key] = body[key];
+    }
   }
 
   const { data, error } = await supabase
-    .from("users")
+    .from('users')
     .update(updates)
-    .eq("user_id", decoded.user_id)
+    .eq('user_id', decoded.user_id)
     .select()
     .single();
 
-  if (error)
+  if (error) {
     return res.status(400).json({
       status: 400,
       message: error.message,
       data: [],
     });
+  }
 
   return res.status(200).json({
     status: 200,
-    message: "Profile updated successfully",
+    message: 'Profile updated successfully',
     data: { user: data },
   });
 };
 
-// ========== LOGOUT USER ========== //
+
+// New logout function
 export const logoutUser = async (_req: Request, res: Response) => {
-  res.cookie("token", "", {
+  // Clear the token cookie
+  res.cookie('token', '', {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
-    expires: new Date(0),
-    path: "/",
+    secure: false, // true if HTTPS
+    expires: new Date(0), // Expire immediately
+    sameSite: 'lax',
+    path: '/',
   });
 
-  res.status(200).json({ status: 200, message: "Logged out successfully" });
+  res.status(200).json({
+    status: 200,
+    message: 'Logged out successfully',
+  });
 };
 
-// ========== CHANGE PASSWORD ========== //
 export const changePassword = async (req: Request, res: Response): Promise<void> => {
   try {
-    const decoded = (req as any).user;
+    const decoded = (req as any).user; // from JWT middleware
     const userId = decoded?.user_id;
+
     const { currentPassword, newPassword } = req.body;
 
-    if (!currentPassword || !newPassword)
-      return res
-        .status(400)
-        .json({ status: 400, message: "Current and new password required" });
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({ status: 400, message: "Current and new password required" });
+      return;
+    }
 
+    // Fetch user
     const { data: user, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("user_id", userId)
+      .from('users')
+      .select('*')
+      .eq('user_id', userId)
       .single();
 
-    if (error || !user)
-      return res.status(404).json({ status: 404, message: "User not found" });
+    if (error || !user) {
+      res.status(404).json({ status: 404, message: "User not found" });
+      return;
+    }
 
-    if (user.auth_type !== "email")
-      return res.status(400).json({
-        status: 400,
-        message: "Password change only allowed for email users",
-      });
+    if (user.auth_type !== "email") {
+      res.status(400).json({ status: 400, message: "Password change only allowed for email users" });
+      return;
+    }
 
+    // Compare current password
     const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch)
-      return res
-        .status(401)
-        .json({ status: 401, message: "Current password is incorrect" });
+    if (!isMatch) {
+      res.status(401).json({ status: 401, message: "Current password is incorrect" });
+      return;
+    }
 
+    // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     const { error: updateError } = await supabase
-      .from("users")
+      .from('users')
       .update({ password: hashedPassword })
-      .eq("user_id", userId);
+      .eq('user_id', userId);
 
-    if (updateError)
-      return res
-        .status(500)
-        .json({ status: 500, message: "Failed to update password" });
+    if (updateError) {
+      res.status(500).json({ status: 500, message: "Failed to update password" });
+      return;
+    }
 
     res.json({ status: 200, message: "Password updated successfully" });
   } catch (error) {
@@ -326,3 +386,5 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
     res.status(500).json({ status: 500, message: "Failed to change password" });
   }
 };
+
+
