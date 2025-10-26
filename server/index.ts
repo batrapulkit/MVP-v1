@@ -2,9 +2,10 @@ import express, { Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import { registerRoutes } from "./src/routes/registerRoutes";
 import { setupVite, serveStatic, log } from "./vite";
-
 // 🔹 Load environment variables
 dotenv.config();
 
