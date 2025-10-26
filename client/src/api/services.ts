@@ -3,7 +3,8 @@
 import axios from 'axios';
 import { API_URLS } from './apiUrls';
 
-// ==================== INTERFACES ====================
+// Register the user
+
 
 export interface RegisterUserPayload {
   user_name: string;
@@ -20,14 +21,28 @@ export interface RegisterUserPayload {
   status: string;
   role_type: 'user';
   is_active: boolean;
-  auth_type?: string;
 }
 
 export interface RegisterResponse {
   status: number;
   message: string;
-  data: any[];
+  data: any[]; // or User[] if you want to type strictly
 }
+
+export async function registerUser(payload: RegisterUserPayload): Promise<RegisterResponse> {
+  const response = await axios.post(
+    API_URLS.REGISTER,
+    payload,
+    {
+      headers: {
+        ReferrerPolicy: 'no-referrer',
+      },
+      withCredentials: true,
+    }
+  );
+  return response.data;
+}
+
 
 export interface LoginResponse {
   auth_type: string;
@@ -37,6 +52,22 @@ export interface LoginResponse {
   };
 }
 
+export async function loginUser(email: string, password: string): Promise<LoginResponse> {
+  const response = await axios.post(
+    API_URLS.LOGIN,
+    { email, password },
+    {
+      headers: {
+        ReferrerPolicy: 'no-referrer',
+      },
+      withCredentials: true, // if you want to send/receive HTTP-only cookies
+    }
+  );
+  return response.data;
+}
+
+
+// src/api/services.ts
 export interface ProfilePayload {
   full_name?: string;
   first_name?: string;
@@ -58,6 +89,15 @@ export interface ProfileResponse {
   };
 }
 
+export async function saveProfile(payload: ProfilePayload): Promise<ProfileResponse> {
+  const response = await axios.put(API_URLS.UPDATE_PROFILE, payload, {
+    withCredentials: true,
+  });
+  return response.data;
+}
+
+
+
 export interface CurrentUserResponse {
   status: number;
   message: string;
@@ -65,6 +105,38 @@ export interface CurrentUserResponse {
     user: any;
   };
 }
+
+export async function fetchCurrentUser(): Promise<CurrentUserResponse> {
+  const response = await axios.get(API_URLS.CURRENT_USER, {
+    withCredentials: true, // important to send cookies
+  });
+  return response.data;
+}
+
+
+export async function logoutUser(): Promise<void> {
+  await axios.post(API_URLS.LOGOUT, {}, { withCredentials: true });
+}
+
+
+
+export async function googleLoginUser(email: string): Promise<LoginResponse> {
+  const response = await axios.post(
+    API_URLS.GOOGLE_LOGIN,
+    { email },
+    {
+      headers: {
+        ReferrerPolicy: 'no-referrer',
+      },
+      withCredentials: true,
+    }
+  );
+  return response.data;
+}
+
+
+// You can add other services here: registerUser, logoutUser, fetchProfile etc.
+
 
 export interface ChangePasswordPayload {
   currentPassword: string;
@@ -76,6 +148,18 @@ export interface ChangePasswordResponse {
   message: string;
 }
 
+export async function changePassword(
+  payload: ChangePasswordPayload
+): Promise<ChangePasswordResponse> {
+  const response = await axios.post(API_URLS.CHANGE_PASSWORD, payload, {
+    withCredentials: true, // send cookie JWT
+  });
+  return response.data;
+}
+
+
+
+// Chat interfaces
 export interface ChatMessage {
   sender: 'user' | 'bot';
   text: string;
@@ -94,83 +178,7 @@ export interface ChatHistory {
   updated_at?: string;
 }
 
-// ==================== AUTH SERVICES ====================
-
-export async function registerUser(payload: RegisterUserPayload): Promise<RegisterResponse> {
-  const response = await axios.post(
-    API_URLS.REGISTER,
-    payload,
-    {
-      headers: {
-        ReferrerPolicy: 'no-referrer',
-      },
-      withCredentials: true,
-    }
-  );
-  return response.data;
-}
-
-export async function loginUser(email: string, password: string): Promise<LoginResponse> {
-  const response = await axios.post(
-    API_URLS.LOGIN,
-    { email, password },
-    {
-      headers: {
-        ReferrerPolicy: 'no-referrer',
-      },
-      withCredentials: true,
-    }
-  );
-  return response.data;
-}
-
-export async function googleLoginUser(email: string): Promise<LoginResponse> {
-  const response = await axios.post(
-    API_URLS.GOOGLE_LOGIN,
-    { email },
-    {
-      headers: {
-        ReferrerPolicy: 'no-referrer',
-      },
-      withCredentials: true,
-    }
-  );
-  return response.data;
-}
-
-export async function logoutUser(): Promise<void> {
-  await axios.post(API_URLS.LOGOUT, {}, { withCredentials: true });
-}
-
-// ==================== USER SERVICES ====================
-
-export async function fetchCurrentUser(): Promise<CurrentUserResponse> {
-  console.log('👤 Fetching current user from:', API_URLS.CURRENT_USER);
-  const response = await axios.get(API_URLS.CURRENT_USER, {
-    withCredentials: true,
-  });
-  console.log('✅ Current user fetched successfully');
-  return response.data;
-}
-
-export async function saveProfile(payload: ProfilePayload): Promise<ProfileResponse> {
-  const response = await axios.put(API_URLS.UPDATE_PROFILE, payload, {
-    withCredentials: true,
-  });
-  return response.data;
-}
-
-export async function changePassword(
-  payload: ChangePasswordPayload
-): Promise<ChangePasswordResponse> {
-  const response = await axios.post(API_URLS.CHANGE_PASSWORD, payload, {
-    withCredentials: true,
-  });
-  return response.data;
-}
-
-// ==================== CHAT SERVICES ====================
-
+// Save chat messages
 export async function saveChat(chatId: string, messages: ChatMessage[]) {
   const response = await axios.post(
     API_URLS.SAVE_CHAT,
@@ -180,6 +188,7 @@ export async function saveChat(chatId: string, messages: ChatMessage[]) {
   return response.data;
 }
 
+// Get chat messages by chatId
 export async function getChat(chatId: string) {
   const response = await axios.get(API_URLS.GET_CHAT(chatId), {
     withCredentials: true,
