@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "wouter";
+import AIEditChat from "@/components/AIEditChat";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -99,6 +100,40 @@ const EnhancedItinerary: React.FC = () => {
       setIsSpeaking(true);
     }
   };
+
+  // Handle AI plan updates
+const handleAIPlanUpdate = (updatedDay: any) => {
+  const dayIndex = dayData.findIndex(d => d.dayNumber === updatedDay.dayNumber);
+  
+  if (dayIndex !== -1) {
+    const newDayData = [...dayData];
+    newDayData[dayIndex] = {
+      dayNumber: updatedDay.dayNumber || updatedDay.day,
+      title: updatedDay.title,
+      description: updatedDay.description || "",
+      morning: {
+        activity: updatedDay.activities?.[0] || "",
+        description: updatedDay.activitiesDescription?.[0] || "",
+      },
+      afternoon: {
+        activity: updatedDay.activities?.[1] || "",
+        description: updatedDay.activitiesDescription?.[1] || "",
+      },
+      evening: {
+        activity: updatedDay.activities?.[2] || "",
+        description: updatedDay.activitiesDescription?.[2] || "",
+      },
+      travelTips: updatedDay.travelTips || [],
+      meals: updatedDay.meals || {},
+      notes: updatedDay.notes || "",
+      image: dayData[dayIndex].image, // Keep existing image
+      weather: updatedDay.weather || "",
+      transport: updatedDay.transport || "",
+    };
+    
+    setDayData(newDayData);
+  }
+};
 
   /** Load itinerary */
   useEffect(() => {
@@ -420,6 +455,12 @@ const EnhancedItinerary: React.FC = () => {
           <Share2 className="inline w-5 h-5 mr-2" /> Share Your Journey
         </motion.a>
       </motion.div>
+      <AIEditChat 
+  itinerary={itinerary}
+  currentDayData={current}
+  onPlanUpdate={handleAIPlanUpdate}
+  planId={planId}
+/>
     </div>
   );
 };
