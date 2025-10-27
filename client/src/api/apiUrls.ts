@@ -1,4 +1,7 @@
-export const BASE_URL = 'http://127.0.0.1:3001/api';
+// Dynamically set BASE_URL based on environment
+export const BASE_URL = import.meta.env.PROD 
+  ? '/api'  // Production: relative path (same domain)
+  : 'http://127.0.0.1:3001/api';  // Local dev: localhost
 
 export const API_URLS = {
   LOGIN: `${BASE_URL}/users/login`,
@@ -8,7 +11,6 @@ export const API_URLS = {
   GOOGLE_LOGIN: `${BASE_URL}/users/auth/google`,
   UPDATE_PROFILE: `${BASE_URL}/users/profile`,
   CHANGE_PASSWORD: `${BASE_URL}/users/change-password`,
-
   // Chat endpoints
   SAVE_CHAT: `${BASE_URL}/chat/save`,       // POST
   GET_CHAT: (chatId: string) => `${BASE_URL}/chat/${chatId}`, // GET
