@@ -42,7 +42,7 @@ function Router() {
       <Route path="/chatbot" component={ChatBot} />
       <Route path="/edit-profile" component={EditProfile} />
       <Route path="/blogs" component={Blogs} />
-      <Route path="/blogs/:id" component={BlogDetails} />
+      <Route path="/blog/:slug" component={BlogDetails} />
       
       <Route path="/profile">
         <ProtectedRoute>
