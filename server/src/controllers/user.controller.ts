@@ -23,6 +23,7 @@ export const getAllUsers = async (_req: Request, res: Response) => {
     data: data || [],
   });
 };
+
 export const createUser = async (req: Request, res: Response) => {
   try {
     const body: Omit<User, 'user_id'> = req.body;
@@ -89,7 +90,6 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-
 export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -116,29 +116,24 @@ export const loginUser = async (req: Request, res: Response) => {
     return res.status(500).json({ status: 500, message: 'JWT secret is not defined' });
   }
 
-  if (!config.jwtSecret) {
-  return res.status(500).json({ status: 500, message: 'JWT secret is not defined' });
-}
+  const token = jwt.sign(
+    {
+      user_id: user.user_id,
+      email: user.email,
+      role_type: user.role_type,
+    },
+    config.jwtSecret as string,
+    { expiresIn: config.jwtExpiresIn as string }
+  );
 
-const token = jwt.sign(
-  {
-    user_id: user.user_id,
-    email: user.email,
-    role_type: user.role_type,
-  },
-  config.jwtSecret as string, // cast to string to satisfy TS
-  { expiresIn: config.jwtExpiresIn as string } // cast expiresIn to string
-);
-
-  // Set HttpOnly cookie with token
-res.cookie('token', token, {
-  httpOnly: true,
-  secure: false,
-  maxAge: 1000 * 60 * 60,
-  sameSite: 'lax',
-  path: '/',
-});
-
+  // ✅ FIXED: Cookie settings that work in both local and production
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // true on triponic.com, false locally
+    maxAge: 1000 * 60 * 60, // 1 hour
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/',
+  });
 
   // Respond with user data only, NOT token
   res.status(200).json({
@@ -180,8 +175,6 @@ export const getCurrentUser = async (req: Request, res: Response) => {
     data: { user },
   });
 };
-
-
 
 export const googleLoginUser = async (req: Request, res: Response) => {
   const { email } = req.body;
@@ -234,12 +227,12 @@ export const googleLoginUser = async (req: Request, res: Response) => {
     { expiresIn: config.jwtExpiresIn }
   );
 
-  // Set HttpOnly cookie with token
+  // ✅ FIXED: Cookie settings that work in both local and production
   res.cookie('token', token, {
     httpOnly: true,
-    secure: false,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production', // true on triponic.com, false locally
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     path: '/',
   });
 
@@ -258,9 +251,6 @@ export const googleLoginUser = async (req: Request, res: Response) => {
   });
 };
 
-
-
-// controllers/user.controller.ts
 export const updateUserProfile = async (req: Request, res: Response) => {
   const decoded = (req as any).user;
 
@@ -313,15 +303,13 @@ export const updateUserProfile = async (req: Request, res: Response) => {
   });
 };
 
-
-// New logout function
 export const logoutUser = async (_req: Request, res: Response) => {
-  // Clear the token cookie
+  // ✅ FIXED: Clear the token cookie with same settings
   res.cookie('token', '', {
     httpOnly: true,
-    secure: false, // true if HTTPS
+    secure: process.env.NODE_ENV === 'production', // true on triponic.com, false locally
     expires: new Date(0), // Expire immediately
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     path: '/',
   });
 
@@ -386,5 +374,3 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
     res.status(500).json({ status: 500, message: "Failed to change password" });
   }
 };
-
-
