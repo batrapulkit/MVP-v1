@@ -715,6 +715,7 @@ export const blogPosts: BlogPost[] = [
         "AI travel planning, ultimate guide, how to use AI for travel, AI itinerary builder, Triponic, travel planning 2025, AI travel budgeting, AI packing list",
       canonical:
         "https://triponic.com/blog/ultimate-guide-ai-travel-planning",
+        "https://medium.com/@pulkitbatra2024/-c73ee21044a5"
       ogTitle: "The Ultimate Guide to Using AI for Travel Planning | Triponic",
       ogDescription:
         "Ditch the spreadsheets and 50 tabs. Learn how to use AI for every step of your trip, from budgeting to a perfect, map-based itinerary.",
