@@ -4,9 +4,104 @@ import TripPlanMessage from "@/components/chatbot/components/TripPlanMessage";
 import { useLocation } from "wouter";
 import { saveChat } from "@/api/services";
 import { marked } from "marked";
+import { supabase } from "@/lib/supabaseClient";
+import { v4 as uuidv4 } from 'uuid';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const PEXELS_API_KEY = import.meta.env.VITE_PEXELS_API_KEY;
+
+// 🔥 DB Helper Functions (Added)
+const getCurrentUserId = async () => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id || null;
+  } catch {
+    return null;
+  }
+};
+
+const saveChatToDB = async (chatId: string, userId: string | null, message: any, metadata: any = {}) => {
+  try {
+    const { data: existingChat } = await supabase
+      .from('chat_history')
+      .select('*')
+      .eq('chat_id', chatId)
+      .maybeSingle();
+
+    if (existingChat) {
+      const updatedMessages = [...(existingChat.messages || []), message];
+      await supabase
+        .from('chat_history')
+        .update({
+          messages: updatedMessages,
+          updated_at: new Date().toISOString(),
+          ...metadata
+        })
+        .eq('chat_id', chatId);
+    } else {
+      await supabase
+        .from('chat_history')
+        .insert({
+          id: uuidv4(),
+          chat_id: chatId,
+          user_id: userId,
+          messages: [message],
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          ...metadata
+        });
+    }
+  } catch (error) {
+    console.error('DB save warning:', error);
+  }
+};
+
+const saveItineraryToDB = async (userId: string | null, chatId: string, itineraryData: any, geminiResponse: any) => {
+  try {
+    const itineraryId = uuidv4();
+    const planId = itineraryData.plan_id || `plan-${Date.now()}`;
+    const durationMatch = itineraryData.duration?.match(/(\d+)/);
+    const duration = durationMatch ? `${durationMatch[1]} days` : itineraryData.duration;
+
+    console.log('💾 Saving itinerary for user:', userId);
+
+    // Store everything in ONE row - all days as JSON
+    await supabase.from('itineraries').insert({
+      id: itineraryId,
+      user_id: userId,
+      plan_id: planId,
+      chat_id: chatId,
+      destination: itineraryData.destination || '',
+      thumbnail: itineraryData.thumbnail || '',
+      duration: duration || '',
+      budget: itineraryData.budget || '',
+      travelers: parseInt(itineraryData.travelers) || 1,
+      interest: itineraryData.interest || '',
+      total_cost: itineraryData.totalCost || '',
+      flights: itineraryData.flights || null,
+      hotel: itineraryData.hotel || null,
+      weather: itineraryData.weather || null,
+      full_response: geminiResponse || null, // This contains everything including all days
+      status: 'active',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    });
+
+    // 🔥 REMOVED: No more itinerary_days inserts
+
+    await supabase
+      .from('chat_history')
+      .update({
+        itinerary: { itinerary_id: itineraryId, plan_id: planId },
+        updated_at: new Date().toISOString()
+      })
+      .eq('chat_id', chatId);
+
+    console.log('✅ Saved to DB - Itinerary ID:', itineraryId, '- All days stored in one row');
+  } catch (error) {
+    console.error('DB save warning:', error);
+  }
+};
 
 const ChatBot = ({
   isOpen = true,
@@ -239,6 +334,9 @@ Generate ${dataToUse.date} days in dailyPlan array. Return pure JSON only.`.trim
         throw new Error(`Missing: ${missing.join(', ')}`);
       }
 
+      // 🔥 Get user ID
+      const userId = await getCurrentUserId();
+
       // Confirmation
       const confirmMsg = { 
         sender: "bot", 
@@ -247,6 +345,12 @@ Generate ${dataToUse.date} days in dailyPlan array. Return pure JSON only.`.trim
         type: "text" 
       };
       setMessages(prev => [...prev, confirmMsg]);
+      
+      // 🔥 Save confirmation to DB
+      if (chatIdRef.current) {
+        saveChatToDB(chatIdRef.current, userId, { role: "assistant", content: confirmMsg.text, timestamp: new Date().toISOString() });
+      }
+      
       await new Promise(r => setTimeout(r, 1000));
 
       // Generating
@@ -290,6 +394,11 @@ Generate ${dataToUse.date} days in dailyPlan array. Return pure JSON only.`.trim
       }]));
 
       console.log("✅ Saved to:", historyKey);
+
+      // 🔥 Save to Supabase
+      if (chatIdRef.current && botResponse.detailedPlan) {
+        saveItineraryToDB(userId, chatIdRef.current, { ...botResponse.detailedPlan, plan_id: planId, budget: finalData.budget, interest: finalData.interest }, botResponse);
+      }
 
     } catch (error) {
       console.error("❌ Generation error:", error);
@@ -357,6 +466,12 @@ Generate ${dataToUse.date} days in dailyPlan array. Return pure JSON only.`.trim
     const userMsg = { sender: "user", text: userText, type: "text", suggestions: [] };
     setMessages(prev => [...prev, userMsg]);
 
+    // 🔥 Save user message to DB
+    const userId = await getCurrentUserId();
+    if (chatIdRef.current) {
+      saveChatToDB(chatIdRef.current, userId, { role: "user", content: userText, timestamp: new Date().toISOString() });
+    }
+
     setLoading(true);
 
     // Define the flow sequence
@@ -405,11 +520,6 @@ Generate ${dataToUse.date} days in dailyPlan array. Return pure JSON only.`.trim
     
     console.log("✅ Updated:", updatedData);
 
-    // Save user message
-    if (chatIdRef.current) {
-      saveChat(chatIdRef.current, [userMsg]).catch(e => console.error("Save failed:", e));
-    }
-
     // Check if we should generate or ask next question
     if (currentStep.nextState === "generate") {
       console.log("🎯 All data collected, generating...");
@@ -428,8 +538,9 @@ Generate ${dataToUse.date} days in dailyPlan array. Return pure JSON only.`.trim
         setMessages(prev => [...prev, botMsg]);
         setConversationState(currentStep.nextState);
         
+        // 🔥 Save bot message to DB
         if (chatIdRef.current) {
-          saveChat(chatIdRef.current, [botMsg]).catch(e => console.error("Save failed:", e));
+          saveChatToDB(chatIdRef.current, userId, { role: "assistant", content: botMsg.text, timestamp: new Date().toISOString() }, { destination: updatedData.location || null, start_date: updatedData.date || null, budget: updatedData.budget || null });
         }
         
         setLoading(false);
@@ -628,16 +739,23 @@ Generate ${dataToUse.date} days in dailyPlan array. Return pure JSON only.`.trim
               </svg>
             </button>
             <button
-              onClick={handleMicClick}
-              className={`bg-gray-200 text-gray-700 rounded-full p-2 shadow hover:bg-gray-300 active:bg-gray-400 transition ${recording ? "animate-pulse ring-2 ring-blue-400" : ""}`}
-              aria-label="Speak your request"
-              type="button"
-              disabled={loading || recording}
+            onClick={handleMicClick}
+            className={`bg-gray-200 text-gray-700 rounded-full p-2 shadow hover:bg-gray-300 active:bg-gray-400 transition ${
+              recording ? "animate-pulse ring-2 ring-blue-400" : ""
+            }`}
+            aria-label="Speak your request"
+            type="button"
+            disabled={loading || recording}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="currentColor"
+              viewBox="0 0 24 24"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3zm5 10a1 1 0 1 1 2 0c0 4.418-3.582 8-8 8s-8-3.582-8-8a1 1 0 1 1 2 0c0 3.314 2.686 6 6 6s6-2.686 6-6zm-7 8h2v2a1 1 0 1 1-2 0v-2z"/>
-              </svg>
-            </button>
+              <path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3zm5 10a1 1 0 1 1 2 0c0 4.418-3.582 8-8 8s-8-3.582-8-8a1 1 0 1 1 2 0c0 3.314 2.686 6 6 6s6-2.686 6-6zm-7 8h2v2a1 1 0 1 1-2 0v-2z" />
+            </svg>
+          </button>
           </div>
 
           <div className="px-3 sm:px-4 pb-4">
