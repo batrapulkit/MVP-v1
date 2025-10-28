@@ -10,6 +10,8 @@ import {
   VolumeX,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { supabase } from "@/lib/supabaseClient";
+import { v4 as uuidv4 } from 'uuid';
 
 const YOUR_PEXELS_API_KEY =
   "P2dLrk5TWTRGCbNvBizKynGkuHNP68q4a4gC6PXuIEmGtlxzHSivyUPw";
@@ -32,6 +34,48 @@ export type Day = {
   transport?: string;
 };
 export type Itinerary = { days: Day[]; destination: string; thumbnail: string };
+
+// 🔥 DB Helper Functions (Added)
+const getItineraryByPlanId = async (planId: string) => {
+  try {
+    const { data: itinerary } = await supabase
+      .from('itineraries')
+      .select('*')
+      .eq('plan_id', planId)
+      .single();
+    return itinerary;
+  } catch {
+    return null;
+  }
+};
+
+// const updateDayInDB = async (itineraryId: string, dayNumber: number, updates: any) => {
+//   try {
+//     await supabase
+//       .from('itinerary_days')
+//       .update({
+//         title: updates.title,
+//         description: updates.description,
+//         morning_activity: updates.activities?.[0] || '',
+//         morning_description: updates.activitiesDescription?.[0] || '',
+//         afternoon_activity: updates.activities?.[1] || '',
+//         afternoon_description: updates.activitiesDescription?.[1] || '',
+//         evening_activity: updates.activities?.[2] || '',
+//         evening_description: updates.activitiesDescription?.[2] || '',
+//         meals: updates.meals,
+//         travel_tips: updates.travelTips,
+//         weather: updates.weather,
+//         transport: updates.transport,
+//         notes: updates.notes,
+//         updated_at: new Date().toISOString()
+//       })
+//       .eq('itinerary_id', itineraryId)
+//       .eq('day_number', dayNumber);
+//     console.log('✅ Day updated in DB:', dayNumber);
+//   } catch (error) {
+//     console.error('DB update warning:', error);
+//   }
+// };
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -101,8 +145,7 @@ const EnhancedItinerary: React.FC = () => {
     }
   };
 
-  // Handle AI plan updates
-const handleAIPlanUpdate = (updatedDay: any) => {
+  const handleAIPlanUpdate = async (updatedDay: any) => {
   const dayIndex = dayData.findIndex(d => d.dayNumber === updatedDay.dayNumber);
   
   if (dayIndex !== -1) {
@@ -126,12 +169,45 @@ const handleAIPlanUpdate = (updatedDay: any) => {
       travelTips: updatedDay.travelTips || [],
       meals: updatedDay.meals || {},
       notes: updatedDay.notes || "",
-      image: dayData[dayIndex].image, // Keep existing image
+      image: dayData[dayIndex].image,
       weather: updatedDay.weather || "",
       transport: updatedDay.transport || "",
     };
     
     setDayData(newDayData);
+
+    // 🔥 Update the entire itinerary in DB with new day data
+    if (planId) {
+      const dbItinerary = await getItineraryByPlanId(planId);
+      if (dbItinerary?.id && dbItinerary.full_response) {
+        // Update the full_response with modified day
+        const updatedFullResponse = { ...dbItinerary.full_response };
+        if (updatedFullResponse.detailedPlan?.dailyPlan) {
+          updatedFullResponse.detailedPlan.dailyPlan[dayIndex] = {
+            day: updatedDay.dayNumber,
+            title: updatedDay.title,
+            description: updatedDay.description,
+            activities: updatedDay.activities,
+            activitiesDescription: updatedDay.activitiesDescription,
+            travelTips: updatedDay.travelTips,
+            meals: updatedDay.meals,
+            weather: updatedDay.weather,
+            transport: updatedDay.transport,
+            notes: updatedDay.notes
+          };
+        }
+
+        await supabase
+          .from('itineraries')
+          .update({
+            full_response: updatedFullResponse,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', dbItinerary.id);
+        
+        console.log('✅ Updated itinerary in DB');
+      }
+    }
   }
 };
 
@@ -456,11 +532,11 @@ const handleAIPlanUpdate = (updatedDay: any) => {
         </motion.a>
       </motion.div>
       <AIEditChat 
-  itinerary={itinerary}
-  currentDayData={current}
-  onPlanUpdate={handleAIPlanUpdate}
-  planId={planId}
-/>
+        itinerary={itinerary}
+        currentDayData={current}
+        onPlanUpdate={handleAIPlanUpdate}
+        planId={planId}
+      />
     </div>
   );
 };
