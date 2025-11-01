@@ -11,6 +11,7 @@ const allowedOrigins = [
   "https://www.triponic.com",
   "http://localhost:2000",
   "http://127.0.0.1:2000"
+  "https://shark-app-fyixd.ondigitalocean.app"
 ];
 
 const corsOptions = {
