@@ -8,13 +8,21 @@ import {
   Volume2,
   Share2,
   VolumeX,
+  Plane,
+  Hotel,
+  MapPin,
+  Calendar,
+  DollarSign,
+  Users,
+  Clock,
+  Sparkles,
+  TrendingUp,
+  ChevronDown,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabaseClient";
-import { v4 as uuidv4 } from 'uuid';
 
-const YOUR_PEXELS_API_KEY =
-  "P2dLrk5TWTRGCbNvBizKynGkuHNP68q4a4gC6PXuIEmGtlxzHSivyUPw";
+const YOUR_PEXELS_API_KEY = "P2dLrk5TWTRGCbNvBizKynGkuHNP68q4a4gC6PXuIEmGtlxzHSivyUPw";
 
 /** TYPES */
 type Activity = { activity: string; description?: string };
@@ -35,7 +43,6 @@ export type Day = {
 };
 export type Itinerary = { days: Day[]; destination: string; thumbnail: string };
 
-// 🔥 DB Helper Functions (Added)
 const getItineraryByPlanId = async (planId: string) => {
   try {
     const { data: itinerary } = await supabase
@@ -48,34 +55,6 @@ const getItineraryByPlanId = async (planId: string) => {
     return null;
   }
 };
-
-// const updateDayInDB = async (itineraryId: string, dayNumber: number, updates: any) => {
-//   try {
-//     await supabase
-//       .from('itinerary_days')
-//       .update({
-//         title: updates.title,
-//         description: updates.description,
-//         morning_activity: updates.activities?.[0] || '',
-//         morning_description: updates.activitiesDescription?.[0] || '',
-//         afternoon_activity: updates.activities?.[1] || '',
-//         afternoon_description: updates.activitiesDescription?.[1] || '',
-//         evening_activity: updates.activities?.[2] || '',
-//         evening_description: updates.activitiesDescription?.[2] || '',
-//         meals: updates.meals,
-//         travel_tips: updates.travelTips,
-//         weather: updates.weather,
-//         transport: updates.transport,
-//         notes: updates.notes,
-//         updated_at: new Date().toISOString()
-//       })
-//       .eq('itinerary_id', itineraryId)
-//       .eq('day_number', dayNumber);
-//     console.log('✅ Day updated in DB:', dayNumber);
-//   } catch (error) {
-//     console.error('DB update warning:', error);
-//   }
-// };
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -118,6 +97,46 @@ const CardContent = ({
   className?: string;
 }) => <div className={className}>{children}</div>;
 
+// Helper functions for flight booking
+const locationToAirport: Record<string, string> = {
+  "new york": "JFK", "los angeles": "LAX", "san francisco": "SFO",
+  "chicago": "ORD", "miami": "MIA", "dallas": "DFW", "seattle": "SEA",
+  "toronto": "YYZ", "vancouver": "YVR", "montreal": "YUL",
+  "paris": "CDG", "london": "LHR", "tokyo": "HND", "dubai": "DXB",
+  "singapore": "SIN", "delhi": "DEL", "mumbai": "BOM", "bangalore": "BLR",
+  "sydney": "SYD", "melbourne": "MEL", "rome": "FCO", "barcelona": "BCN",
+  "amsterdam": "AMS", "berlin": "BER", "madrid": "MAD", "lisbon": "LIS",
+  "bali": "DPS", "bangkok": "BKK", "hong kong": "HKG", "seoul": "ICN",
+};
+
+function getAirportCode(location: string): string {
+  const key = location.toLowerCase().trim();
+  for (const [place, code] of Object.entries(locationToAirport)) {
+    if (key.includes(place)) return code;
+  }
+  return location.substring(0, 3).toUpperCase();
+}
+
+function formatDateMDY(dateStr: string) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+}
+
+// Extract user location
+const getUserLocation = () => {
+  try {
+    const rawLocation = localStorage.getItem("userLocation");
+    if (rawLocation) {
+      const locationData = JSON.parse(rawLocation);
+      return locationData.city || "New York";
+    }
+  } catch (e) {
+    console.warn("Failed to parse user location");
+  }
+  return "New York";
+};
+
 const EnhancedItinerary: React.FC = () => {
   const [location] = useLocation();
   const [rawPath] = location.split("?");
@@ -129,9 +148,17 @@ const EnhancedItinerary: React.FC = () => {
   const [dayData, setDayData] = useState<Day[]>([]);
   const [error, setError] = useState<string>("");
   const [geminiResponse, setGeminiResponse] = useState<any>(null);
-  const [backgroundPhotos, setBackgroundPhotos] = useState<string[]>([]);
   const [notes, setNotes] = useState<string>("");
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [showBooking, setShowBooking] = useState(false);
+  
+  // Trip data from chatbot
+  const [userOrigin, setUserOrigin] = useState<string>("");
+  const [tripStartDate, setTripStartDate] = useState<string>("");
+  const [tripEndDate, setTripEndDate] = useState<string>("");
+  const [tripBudget, setTripBudget] = useState<string>("");
+  const [tripTravelers, setTripTravelers] = useState<string>("1");
+  const [tripInterest, setTripInterest] = useState<string>("");
 
   const speak = (text: string) => {
     if (speechSynthesis.speaking) {
@@ -146,72 +173,68 @@ const EnhancedItinerary: React.FC = () => {
   };
 
   const handleAIPlanUpdate = async (updatedDay: any) => {
-  const dayIndex = dayData.findIndex(d => d.dayNumber === updatedDay.dayNumber);
-  
-  if (dayIndex !== -1) {
-    const newDayData = [...dayData];
-    newDayData[dayIndex] = {
-      dayNumber: updatedDay.dayNumber || updatedDay.day,
-      title: updatedDay.title,
-      description: updatedDay.description || "",
-      morning: {
-        activity: updatedDay.activities?.[0] || "",
-        description: updatedDay.activitiesDescription?.[0] || "",
-      },
-      afternoon: {
-        activity: updatedDay.activities?.[1] || "",
-        description: updatedDay.activitiesDescription?.[1] || "",
-      },
-      evening: {
-        activity: updatedDay.activities?.[2] || "",
-        description: updatedDay.activitiesDescription?.[2] || "",
-      },
-      travelTips: updatedDay.travelTips || [],
-      meals: updatedDay.meals || {},
-      notes: updatedDay.notes || "",
-      image: dayData[dayIndex].image,
-      weather: updatedDay.weather || "",
-      transport: updatedDay.transport || "",
-    };
+    const dayIndex = dayData.findIndex(d => d.dayNumber === updatedDay.dayNumber);
     
-    setDayData(newDayData);
+    if (dayIndex !== -1) {
+      const newDayData = [...dayData];
+      newDayData[dayIndex] = {
+        dayNumber: updatedDay.dayNumber || updatedDay.day,
+        title: updatedDay.title,
+        description: updatedDay.description || "",
+        morning: {
+          activity: updatedDay.activities?.[0] || "",
+          description: updatedDay.activitiesDescription?.[0] || "",
+        },
+        afternoon: {
+          activity: updatedDay.activities?.[1] || "",
+          description: updatedDay.activitiesDescription?.[1] || "",
+        },
+        evening: {
+          activity: updatedDay.activities?.[2] || "",
+          description: updatedDay.activitiesDescription?.[2] || "",
+        },
+        travelTips: updatedDay.travelTips || [],
+        meals: updatedDay.meals || {},
+        notes: updatedDay.notes || "",
+        image: dayData[dayIndex].image,
+        weather: updatedDay.weather || "",
+        transport: updatedDay.transport || "",
+      };
+      
+      setDayData(newDayData);
 
-    // 🔥 Update the entire itinerary in DB with new day data
-    if (planId) {
-      const dbItinerary = await getItineraryByPlanId(planId);
-      if (dbItinerary?.id && dbItinerary.full_response) {
-        // Update the full_response with modified day
-        const updatedFullResponse = { ...dbItinerary.full_response };
-        if (updatedFullResponse.detailedPlan?.dailyPlan) {
-          updatedFullResponse.detailedPlan.dailyPlan[dayIndex] = {
-            day: updatedDay.dayNumber,
-            title: updatedDay.title,
-            description: updatedDay.description,
-            activities: updatedDay.activities,
-            activitiesDescription: updatedDay.activitiesDescription,
-            travelTips: updatedDay.travelTips,
-            meals: updatedDay.meals,
-            weather: updatedDay.weather,
-            transport: updatedDay.transport,
-            notes: updatedDay.notes
-          };
+      if (planId) {
+        const dbItinerary = await getItineraryByPlanId(planId);
+        if (dbItinerary?.id && dbItinerary.full_response) {
+          const updatedFullResponse = { ...dbItinerary.full_response };
+          if (updatedFullResponse.detailedPlan?.dailyPlan) {
+            updatedFullResponse.detailedPlan.dailyPlan[dayIndex] = {
+              day: updatedDay.dayNumber,
+              title: updatedDay.title,
+              description: updatedDay.description,
+              activities: updatedDay.activities,
+              activitiesDescription: updatedDay.activitiesDescription,
+              travelTips: updatedDay.travelTips,
+              meals: updatedDay.meals,
+              weather: updatedDay.weather,
+              transport: updatedDay.transport,
+              notes: updatedDay.notes
+            };
+          }
+
+          await supabase
+            .from('itineraries')
+            .update({
+              full_response: updatedFullResponse,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', dbItinerary.id);
         }
-
-        await supabase
-          .from('itineraries')
-          .update({
-            full_response: updatedFullResponse,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', dbItinerary.id);
-        
-        console.log('✅ Updated itinerary in DB');
       }
     }
-  }
-};
+  };
 
-  /** Load itinerary */
+  /** Load itinerary and extract all data from chatbot */
   useEffect(() => {
     if (!planId) {
       setError("Plan ID is missing from URL");
@@ -226,11 +249,30 @@ const EnhancedItinerary: React.FC = () => {
 
     try {
       const parsedHistory = JSON.parse(storedHistory);
-      const lastEntry =
-        parsedHistory.length > 0 ? parsedHistory[parsedHistory.length - 1] : null;
+      const lastEntry = parsedHistory.length > 0 ? parsedHistory[parsedHistory.length - 1] : null;
+      
       if (lastEntry?.geminiResponse?.detailedPlan) {
         setGeminiResponse(lastEntry.geminiResponse);
         const geminiData = lastEntry.geminiResponse;
+        const detailedPlan = geminiData.detailedPlan;
+
+        const userCity = getUserLocation();
+        setUserOrigin(detailedPlan.flights?.departure || userCity);
+        
+        setTripBudget(detailedPlan.budget || "");
+        setTripTravelers(detailedPlan.travelers?.toString() || "1");
+        setTripInterest(detailedPlan.interest || "");
+
+        const durationMatch = detailedPlan.duration?.match(/(\d+)/);
+        const numDays = durationMatch ? parseInt(durationMatch[1]) : 5;
+        
+        const today = new Date();
+        today.setDate(today.getDate() + 14);
+        setTripStartDate(today.toISOString().split('T')[0]);
+        
+        const endDate = new Date(today);
+        endDate.setDate(endDate.getDate() + numDays);
+        setTripEndDate(endDate.toISOString().split('T')[0]);
 
         const days: Day[] = geminiData.detailedPlan.dailyPlan.map((day: any) => ({
           dayNumber: day.day,
@@ -324,6 +366,109 @@ const EnhancedItinerary: React.FC = () => {
     localStorage.setItem(`notes-${itinerary.destination}-${currentDay}`, val);
   };
 
+  const handleBookFlights = () => {
+    if (!itinerary?.destination || !tripStartDate) {
+      alert("Please ensure travel dates are available");
+      return;
+    }
+
+    const fromCode = getAirportCode(userOrigin);
+    const toCode = getAirportCode(itinerary.destination);
+    const fromDate = formatDateMDY(tripStartDate);
+    const toDate = tripEndDate ? formatDateMDY(tripEndDate) : "";
+
+    let url = `https://www.expedia.com/Flights-Search?flight-type=on&mode=search&trip=${
+      tripEndDate ? "roundtrip" : "oneway"
+    }`;
+    url += `&leg1=from:${fromCode},to:${toCode},departure:${fromDate}TANYT`;
+    if (tripEndDate) {
+      url += `&leg2=from:${toCode},to:${fromCode},departure:${toDate}TANYT`;
+    }
+    url += `&options=cabinclass:economy&passengers=adults:${tripTravelers || 1}`;
+
+    window.open(url, "_blank");
+  };
+
+  const generateHotelWidgetHTML = () => {
+    const dest = itinerary?.destination.split(",")[0].trim() || "Paris";
+    const checkIn = tripStartDate || "";
+    const checkOut = tripEndDate || "";
+    
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { 
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+  background: linear-gradient(135deg, #0a0f14 0%, #1a2332 100%);
+  padding: 20px;
+  color: white;
+}
+.container { max-width: 1200px; margin: 0 auto; }
+.triponic-header {
+  background: linear-gradient(135deg, #00ffe0 0%, #00d4ff 100%);
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+.triponic-header h1 {
+  color: #0a0f14;
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+}
+.triponic-header p {
+  color: #0a0f14;
+  font-size: 0.9rem;
+  margin-top: 5px;
+  opacity: 0.8;
+}
+h2 { color: #00ffe0; margin-bottom: 20px; font-size: 1.8rem; }
+.widget-section {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(0,255,240,0.2);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+  backdrop-filter: blur(10px);
+}
+.eg-widget { min-height: 400px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="triponic-header">
+    <h1>🏨 Triponic Hotels</h1>
+    <p>Find Your Perfect Stay in ${dest}</p>
+  </div>
+  
+  <div class="widget-section">
+    <h2>Search Hotels</h2>
+    <div class="eg-widget" 
+         data-widget="search" 
+         data-program="us-expedia" 
+         data-lobs="stays" 
+         data-network="pz" 
+         data-camref="1011l5mZ2Y" 
+         data-pubref="TriponicItinerary"
+         data-destination="${dest}"
+         ${checkIn ? `data-checkin="${checkIn}"` : ''}
+         ${checkOut ? `data-checkout="${checkOut}"` : ''}
+         data-adults="${tripTravelers || 1}">
+    </div>
+    <script class="eg-widgets-script" 
+            src="https://creator.expediagroup.com/products/widgets/assets/eg-widgets.js">
+    </script>
+  </div>
+</div>
+</body>
+</html>`;
+  };
+
   const current = dayData[currentDay];
   if (!current)
     return (
@@ -334,7 +479,6 @@ const EnhancedItinerary: React.FC = () => {
 
   return (
     <div className="relative min-h-screen font-sans text-white bg-gradient-to-br from-[#050505] via-[#0a0f14] to-[#0b1c25] overflow-hidden">
-      {/* Soft ambient gradient glow */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(0,255,240,0.07),transparent_60%),radial-gradient(circle_at_80%_80%,rgba(255,215,0,0.05),transparent_60%)]"></div>
 
       <motion.div
@@ -367,7 +511,223 @@ const EnhancedItinerary: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* GRID */}
+        {/* READY TO BOOK SECTION - NEW */}
+        <motion.div variants={itemVariants} className="w-full">
+          <button
+            onClick={() => setShowBooking(!showBooking)}
+            className="w-full group"
+          >
+            <div className="relative backdrop-blur-2xl bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 border border-white/10 rounded-3xl p-8 hover:border-cyan-400/30 transition-all duration-300 shadow-[0_4px_40px_rgba(0,0,0,0.5)]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-4 bg-gradient-to-br from-cyan-500 to-purple-500 rounded-2xl shadow-lg">
+                    <Sparkles className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <h3 className="text-3xl font-bold text-white mb-1">✈️ Ready to Book Your Trip?</h3>
+                    <p className="text-white/60">Complete your journey to {itinerary?.destination}</p>
+                  </div>
+                </div>
+                <motion.div
+                  animate={{ rotate: showBooking ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ChevronDown className="w-8 h-8 text-cyan-400" />
+                </motion.div>
+              </div>
+            </div>
+          </button>
+
+          <AnimatePresence>
+            {showBooking && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="overflow-hidden mt-6"
+              >
+                {/* Trip Summary Banner */}
+                <Card className="bg-gradient-to-r from-purple-900/40 via-pink-900/40 to-orange-900/40 mb-6">
+                  <CardContent>
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-br from-[#00ffe0] to-[#00d4ff] rounded-2xl">
+                          <Sparkles className="w-7 h-7 text-black" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-[#00ffe0]">Your Triponic Journey</h3>
+                          <p className="text-sm text-gray-400">Everything ready for booking</p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 flex-1 max-w-2xl">
+                        <div className="bg-black/30 rounded-xl p-3 border border-white/10">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Clock className="w-4 h-4 text-[#00ffe0]" />
+                            <p className="text-xs text-gray-400">Duration</p>
+                          </div>
+                          <p className="text-white font-bold">{dayData.length} days</p>
+                        </div>
+
+                        <div className="bg-black/30 rounded-xl p-3 border border-white/10">
+                          <div className="flex items-center gap-2 mb-1">
+                            <DollarSign className="w-4 h-4 text-[#ffd166]" />
+                            <p className="text-xs text-gray-400">Budget</p>
+                          </div>
+                          <p className="text-white font-bold text-sm">{tripBudget || "Flexible"}</p>
+                        </div>
+
+                        <div className="bg-black/30 rounded-xl p-3 border border-white/10">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Users className="w-4 h-4 text-[#00d4ff]" />
+                            <p className="text-xs text-gray-400">Travelers</p>
+                          </div>
+                          <p className="text-white font-bold">{tripTravelers}</p>
+                        </div>
+
+                        <div className="bg-black/30 rounded-xl p-3 border border-white/10">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Sparkles className="w-4 h-4 text-[#7afcff]" />
+                            <p className="text-xs text-gray-400">Vibe</p>
+                          </div>
+                          <p className="text-white font-bold text-sm">{tripInterest || "Mixed"}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Flight Booking Card */}
+                  <Card className="col-span-1">
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl">
+                          <Plane className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-2xl font-bold text-[#00ffe0]">Book Flights</h3>
+                          <p className="text-sm text-gray-400">From {userOrigin || "your city"}</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-[#1a1b1e]/50 to-[#2a2b2e]/50 rounded-xl p-4 border border-white/5 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <MapPin className="w-5 h-5 text-[#00ffe0] mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-500">Route</p>
+                            <p className="text-white font-semibold">{userOrigin} → {itinerary?.destination}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <Calendar className="w-5 h-5 text-[#ffd166] mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-500">Travel Dates</p>
+                            <p className="text-white font-semibold">
+                              {tripStartDate && new Date(tripStartDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              {tripEndDate && ` - ${new Date(tripEndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <Users className="w-5 h-5 text-[#00d4ff] mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-500">Travelers</p>
+                            <p className="text-white font-semibold">{tripTravelers} {parseInt(tripTravelers) > 1 ? 'people' : 'person'}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button
+                        onClick={handleBookFlights}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-[0_0_30px_rgba(59,130,246,0.5)] transition-all"
+                      >
+                        <Plane className="w-5 h-5 mr-2" />
+                        Search Flights on Expedia
+                      </Button>
+
+                      <div className="flex items-center gap-2 p-3 bg-blue-600/10 border border-blue-400/20 rounded-xl">
+                        <Sparkles className="w-4 h-4 text-[#00ffe0]" />
+                        <p className="text-xs text-gray-300">
+                          <strong className="text-[#00ffe0]">Tip:</strong> Tuesday-Thursday flights are typically 15-20% cheaper
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Hotel Booking Card */}
+                  <Card className="col-span-1">
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-3 bg-gradient-to-r from-pink-600 to-orange-600 rounded-xl">
+                          <Hotel className="w-6 h-6" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-2xl font-bold text-[#00ffe0]">Book Hotels</h3>
+                          <p className="text-sm text-gray-400">Stay in {itinerary?.destination.split(',')[0]}</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-br from-[#1a1b1e]/50 to-[#2a2b2e]/50 rounded-xl p-4 border border-white/5 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <MapPin className="w-5 h-5 text-[#00ffe0] mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-500">Location</p>
+                            <p className="text-white font-semibold">{itinerary?.destination}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <Calendar className="w-5 h-5 text-[#ffd166] mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-500">Check-in / Check-out</p>
+                            <p className="text-white font-semibold">
+                              {tripStartDate && new Date(tripStartDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              {tripEndDate && ` - ${new Date(tripEndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-3">
+                          <DollarSign className="w-5 h-5 text-[#00d4ff] mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-500">Budget Range</p>
+                            <p className="text-white font-semibold">{tripBudget || "All budgets"}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <a
+                        href="#hotel-search-section"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          document.getElementById('hotel-search-section')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                      >
+                        <Button className="w-full bg-gradient-to-r from-pink-600 to-orange-600 hover:from-pink-700 hover:to-orange-700 text-white font-semibold py-4 rounded-xl shadow-lg hover:shadow-[0_0_30px_rgba(236,72,153,0.5)] transition-all">
+                          <Hotel className="w-5 h-5 mr-2" />
+                          View Hotels Below
+                        </Button>
+                      </a>
+
+                      <div className="flex items-center gap-2 p-3 bg-pink-600/10 border border-pink-400/20 rounded-xl">
+                        <TrendingUp className="w-4 h-4 text-[#00ffe0]" />
+                        <p className="text-xs text-gray-300">
+                          <strong className="text-[#00ffe0]">Tip:</strong> Hotels near {dayData[0]?.morning.activity.split(' ').slice(0, 3).join(' ') || 'main attractions'} save transport time
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* GRID - Original Itinerary Content */}
         <div className="grid md:grid-cols-4 gap-8 w-full mt-8">
           <Card className="col-span-4 lg:col-span-2">
             <CardContent className="space-y-4 text-gray-100">
@@ -475,6 +835,7 @@ const EnhancedItinerary: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+
 
         {/* NAV + TTS */}
         <motion.div
