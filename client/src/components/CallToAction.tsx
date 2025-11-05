@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import { ArrowRight, Sparkles, Clock, Globe, MapPin } from 'lucide-react';
+import { Sparkles, Globe2, Compass, Plane, Heart } from 'lucide-react';
 
 interface CallToActionProps {
   onStartPlanning?: () => void;
@@ -7,90 +7,83 @@ interface CallToActionProps {
 
 const CallToAction = ({ onStartPlanning }: CallToActionProps) => {
   return (
-    <section className="py-24 relative overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600"></div>
-      
-      {/* Decorative elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/6 animate-float">
-          <Globe className="w-10 h-10 text-white/20" />
+    <section className="relative py-28 overflow-hidden">
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-purple-800 to-indigo-900"></div>
+
+      {/* Floating icons */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-10 animate-float-slow">
+          <Globe2 className="w-10 h-10 text-white/15" />
         </div>
-        <div className="absolute top-1/2 left-1/3 animate-float animation-delay-2000">
-          <MapPin className="w-8 h-8 text-white/20" />
+        <div className="absolute top-1/2 right-1/4 animate-float animation-delay-2000">
+          <Plane className="w-10 h-10 text-white/15 rotate-12" />
         </div>
-        <div className="absolute bottom-1/4 right-1/4 animate-float animation-delay-4000">
-          <Clock className="w-12 h-12 text-white/20" />
+        <div className="absolute bottom-1/3 left-1/3 animate-float animation-delay-4000">
+          <Compass className="w-8 h-8 text-white/15" />
         </div>
-        <div className="absolute top-1/3 right-1/6 animate-float animation-delay-6000">
-          <Sparkles className="w-10 h-10 text-white/20" />
+        <div className="absolute bottom-1/4 right-1/6 animate-float animation-delay-6000">
+          <Heart className="w-9 h-9 text-white/15" />
         </div>
       </div>
-      
-      {/* Content container */}
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 md:p-12 shadow-2xl border border-white/20">
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-medium mb-6">
-                <Sparkles className="w-4 h-4 mr-2" />
-                <span>AI-Powered Travel Planning</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 leading-tight">
-                Transform Your Travel Dreams Into Reality
-              </h2>
-              <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">
-                Create your personalized travel itinerary in minutes with our emotion-aware AI planner that adapts to your unique preferences.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                {onStartPlanning ? (
-                  <button 
-                    onClick={onStartPlanning}
-                    className="bg-white text-purple-600 hover:bg-white/90 shadow-lg transition-all duration-300 px-8 py-4 rounded-full text-lg font-semibold flex items-center justify-center"
-                  >
-                    <span>Start Planning Now</span>
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </button>
-                ) : (
-                  <Link href="/">
-                    <a className="bg-white text-purple-600 hover:bg-white/90 shadow-lg transition-all duration-300 px-8 py-4 rounded-full text-lg font-semibold flex items-center justify-center inline-flex">
-                      <span>Start Planning Now</span>
-                      <ArrowRight className="ml-2 h-5 w-5" />
-                    </a>
-                  </Link>
-                )}
-                <button className="border-white/30 text-white hover:bg-white/10 hover:text-white px-8 py-4 rounded-full text-lg border">
-                  <span>View Demo</span>
-                </button>
-              </div>
+
+      {/* Content */}
+      <div className="relative z-10 container mx-auto px-6 text-center">
+        <div className="max-w-3xl mx-auto bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl shadow-2xl p-10 sm:p-14">
+          <div className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-medium mb-8">
+            <Sparkles className="w-4 h-4 mr-2" />
+            <span>Built by AI. Designed for humans.</span>
+          </div>
+
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6 leading-tight tracking-tight">
+            Your Next Trip Should Feel <span className="text-pink-300">Unreal</span>
+          </h2>
+
+          <p className="text-lg sm:text-xl text-white/80 mb-10 max-w-2xl mx-auto">
+            Triponic’s AI doesn’t just plan — it listens. Tell it how you want your journey to feel, and it curates experiences that match your vibe, pace, and purpose.
+          </p>
+
+          {/* Buttons */}
+          <div className="flex flex-col sm:flex-row justify-center gap-5 mb-10">
+            {onStartPlanning ? (
+              <button
+                onClick={onStartPlanning}
+                className="px-8 py-4 bg-white text-purple-700 font-semibold text-lg rounded-full hover:scale-105 hover:shadow-lg transition-all duration-300 flex items-center justify-center"
+              >
+                <span>Start My Trip</span>
+                <Sparkles className="ml-2 h-5 w-5" />
+              </button>
+            ) : (
+              <Link href="/">
+                <a className="px-8 py-4 bg-white text-purple-700 font-semibold text-lg rounded-full hover:scale-105 hover:shadow-lg transition-all duration-300 flex items-center justify-center">
+                  <span>Start My Trip</span>
+                  <Sparkles className="ml-2 h-5 w-5" />
+                </a>
+              </Link>
+            )}
+            <button className="px-8 py-4 border border-white/40 text-white font-medium text-lg rounded-full hover:bg-white/10 hover:scale-105 transition-all duration-300">
+              Watch Demo
+            </button>
+          </div>
+
+          {/* Mini Highlights */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+            <div className="p-5 rounded-xl bg-white/10 border border-white/10 backdrop-blur-md">
+              <Plane className="h-7 w-7 text-white/90 mb-3" />
+              <h3 className="text-white text-lg font-semibold mb-1">Plan in Seconds</h3>
+              <p className="text-white/70 text-sm">Skip the chaos. Get your AI-crafted itinerary instantly — no research required.</p>
             </div>
-            
-            {/* Feature highlights */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/10">
-                <div className="bg-white/20 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <Clock className="text-white h-6 w-6" />
-                </div>
-                <h3 className="text-white text-lg font-semibold mb-2">Plan in Minutes</h3>
-                <p className="text-white/70">Save hours of research with AI-generated itineraries tailored to your preferences.</p>
-              </div>
-              
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/10">
-                <div className="bg-white/20 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <Sparkles className="text-white h-6 w-6" />
-                </div>
-                <h3 className="text-white text-lg font-semibold mb-2">Emotion-Based</h3>
-                <p className="text-white/70">Our AI understands how you want to feel during your trip to create truly personal experiences.</p>
-              </div>
-              
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-5 border border-white/10">
-                <div className="bg-white/20 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                  <Globe className="text-white h-6 w-6" />
-                </div>
-                <h3 className="text-white text-lg font-semibold mb-2">Global Coverage</h3>
-                <p className="text-white/70">Detailed recommendations for over 150 countries and thousands of destinations worldwide.</p>
-              </div>
+
+            <div className="p-5 rounded-xl bg-white/10 border border-white/10 backdrop-blur-md">
+              <Heart className="h-7 w-7 text-white/90 mb-3" />
+              <h3 className="text-white text-lg font-semibold mb-1">Feel-Guided</h3>
+              <p className="text-white/70 text-sm">Tell us your travel mood — calm, adventurous, romantic — and Triponic shapes it around you.</p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-white/10 border border-white/10 backdrop-blur-md">
+              <Globe2 className="h-7 w-7 text-white/90 mb-3" />
+              <h3 className="text-white text-lg font-semibold mb-1">Everywhere You Dream</h3>
+              <p className="text-white/70 text-sm">From Kyoto’s quiet lanes to Iceland’s skies — curated plans in 150+ countries.</p>
             </div>
           </div>
         </div>
