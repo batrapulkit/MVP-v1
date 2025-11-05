@@ -242,7 +242,7 @@ const HeroSection = ({ onStartPlanning }: HeroSectionProps) => {
       <style>{heroSectionStyles}</style>
 
       <section
-        aria-label="Triponic: AI-Powered Travel Planning. Your Clarity Machine."
+        aria-label="AI-Powered Travel: Your Smart Companion"
         className={`relative min-h-[95vh] bg-gradient-to-br from-purple-950 via-gray-950 to-purple-950 flex flex-col items-center justify-center text-white overflow-hidden 
                     ${mounted ? 'animate-fade-in-hero-section' : ''}`}
       >
@@ -255,19 +255,19 @@ const HeroSection = ({ onStartPlanning }: HeroSectionProps) => {
             <div className="inline-flex items-center px-5 py-2.5 rounded-full bg-purple-900/10 backdrop-blur-md text-white text-base font-semibold mb-8 border border-purple-400/30 shadow-lg transition-all duration-300 hover:scale-105 animate-staggered-item-1"
                  role="status" aria-live="polite">
               <Sparkles className="mr-2 w-5 h-5 text-yellow-300" aria-hidden="true" />
-              <span>AI-Powered Travel: Your Clarity Machine</span>
+              <span>AI-Powered Travel: Your Smart Companion</span>
             </div>
 
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold text-white mb-6 leading-tight tracking-tight">
-              <span className="block animate-kinetic-text" style={{ animationDelay: '0.8s' }}>Effortless Adventures,</span>
+              <span className="block animate-kinetic-text" style={{ animationDelay: '0.8s' }}>Plan Your Next Trip in Seconds,</span>
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 animate-kinetic-text" style={{ animationDelay: '1s' }}>
-                Perfectly Planned by AI
+                Personalized by AI
               </span>
             </h1>
 
             <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto lg:mx-0 font-light leading-relaxed animate-staggered-item-3">
-              Say goodbye to travel planning chaos. Triponic's cutting-edge AI transforms your
-              dreams into a seamless, personalized itinerary, every detail tailored to you.
+              Triponic transforms your travel ideas into a ready-to-go itinerary with real flights,
+              hotels, weather, budgets, and local tips, all tailored perfectly to you.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start">
@@ -277,9 +277,9 @@ const HeroSection = ({ onStartPlanning }: HeroSectionProps) => {
                 className="cta-button group bg-gradient-to-r from-purple-700 to-fuchsia-800 text-white text-lg font-bold py-4 px-10 rounded-full shadow-lg transition-all duration-300 hover:from-purple-800 hover:to-fuchsia-900 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-purple-400/70 focus:ring-offset-2 focus:ring-offset-gray-900 animate-button-pop-in-1"
                 onClick={onStartPlanning}
               >
-                <span>Start Your Adventure</span>
+                <span>⚡ Get Your Free Plan Now</span>
                 <MoveRight className="ml-2 h-5 w-5 inline-block transform transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
-              </button>
+                </button>
               <button
               type="button"
               onClick={() => {
@@ -288,11 +288,17 @@ const HeroSection = ({ onStartPlanning }: HeroSectionProps) => {
               aria-label="Explore features section"
               className="cta-secondary-button bg-transparent text-white text-lg font-medium py-4 px-10 rounded-full border border-purple-400/30 shadow-lg transition-all duration-300 hover:bg-purple-900/10 focus:outline-none focus:ring-4 focus:ring-purple-400/50 focus:ring-offset-2 focus:ring-offset-gray-900 flex items-center justify-center animate-button-pop-in-2"
             >
-              <Play className="mr-2 w-5 h-5" aria-hidden="true" />
-              <span>Explore</span>
+              {/* <Play className="mr-2 w-5 h-5" aria-hidden="true" /> */}
+              <span>🌍 Explore the World</span>
+              
             </button>
             </div>
+   
+            <div className="mt-5 text-sm text-gray-300 animate-staggered-item-4">
+             ✅ Free to try - no credit card needed • 🌎 Trusted by 1,000+ Travelers • 🕒 Plans Ready in Seconds
           </div>
+          </div>
+          
 
           <div className="lg:w-1/2 relative flex justify-center items-center h-[500px] md:h-[600px] flex-shrink-0">
             
