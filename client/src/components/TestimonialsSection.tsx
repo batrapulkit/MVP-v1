@@ -1,8 +1,15 @@
-import { 
-  Star, Quote, Heart, ArrowRight, MapPin, 
-  Calendar, Shield, Luggage 
-} from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import {
+  Star,
+  Quote,
+  Heart,
+  ArrowRight,
+  MapPin,
+  Calendar,
+  Shield,
+  Luggage,
+} from "lucide-react";
+import clsx from "clsx";
 
 type TestimonialType = {
   id: number;
@@ -14,19 +21,21 @@ type TestimonialType = {
   tags: string[];
   emotion: string;
   spotlightFeature: string;
+  gradient: string;
 };
 
 const testimonials: TestimonialType[] = [
   {
     id: 1,
     rating: 5,
-    text: "Triponic's AI helped me sketch a detailed Japan trip in minutes. It’s a game‑changer for early planning and gave me confidence in my itinerary.",
+    text: "Triponic's AI helped me sketch a detailed Japan trip in minutes. It’s a game-changer for early planning and gave me confidence in my itinerary.",
     name: "Sarah J.",
     location: "Beta user, USA",
     image: "https://randomuser.me/api/portraits/women/32.jpg",
-    tags: ["Early planning", "AI‑powered", "Japan"],
+    tags: ["Early planning", "AI-powered", "Japan"],
     emotion: "Optimistic",
-    spotlightFeature: "Smart itinerary drafts"
+    spotlightFeature: "Smart itinerary drafts",
+    gradient: "from-blue-600 via-purple-600 to-indigo-700",
   },
   {
     id: 2,
@@ -37,7 +46,8 @@ const testimonials: TestimonialType[] = [
     image: "https://randomuser.me/api/portraits/men/45.jpg",
     tags: ["Safety", "Solo travel", "Local spots"],
     emotion: "Confident",
-    spotlightFeature: "Personalized safety tips"
+    spotlightFeature: "Personalized safety tips",
+    gradient: "from-indigo-600 via-blue-700 to-cyan-600",
   },
   {
     id: 3,
@@ -48,7 +58,8 @@ const testimonials: TestimonialType[] = [
     image: "https://randomuser.me/api/portraits/women/68.jpg",
     tags: ["Hidden gems", "Adventure", "AI suggestions"],
     emotion: "Excited",
-    spotlightFeature: "Discover hidden gems"
+    spotlightFeature: "Discover hidden gems",
+    gradient: "from-purple-600 via-pink-600 to-rose-500",
   },
   {
     id: 4,
@@ -59,122 +70,111 @@ const testimonials: TestimonialType[] = [
     image: "https://randomuser.me/api/portraits/women/41.jpg",
     tags: ["Packing", "Visa prep", "Efficiency"],
     emotion: "Relieved",
-    spotlightFeature: "AI packing & prep"
-  }
+    spotlightFeature: "AI packing & prep",
+    gradient: "from-orange-500 via-rose-500 to-pink-600",
+  },
 ];
 
-const milestones = [
-  { number: "100+", label: "Beta Users" },
-  { number: "15+", label: "Countries Tested" },
-  { number: "4.8/5", label: "Avg. User Rating" },
-  { number: "10K+", label: "AI Plans Created" },
-];
-
-const featureIcons: { [key: string]: React.ReactNode } = {
-  "Smart itinerary drafts": <Calendar className="text-blue-500" />,
-  "Personalized safety tips": <Shield className="text-indigo-600" />,
-  "Discover hidden gems": <MapPin className="text-purple-600" />,
-  "AI packing & prep": <Luggage className="text-orange-500" />
+const featureIcons: Record<string, JSX.Element> = {
+  "Smart itinerary drafts": <Calendar className="text-blue-300" />,
+  "Personalized safety tips": <Shield className="text-cyan-300" />,
+  "Discover hidden gems": <MapPin className="text-purple-300" />,
+  "AI packing & prep": <Luggage className="text-orange-300" />,
 };
 
 const TestimonialsSection = () => {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [index, setIndex] = useState(0);
+  const active = testimonials[index];
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveIndex(prev => (prev + 1) % testimonials.length);
+      setIndex((prev) => (prev + 1) % testimonials.length);
     }, 10000);
     return () => clearInterval(interval);
   }, []);
 
-  const nextTestimonial = () => setActiveIndex(prev => (prev + 1) % testimonials.length);
-  const prevTestimonial = () => setActiveIndex(prev => (prev - 1 + testimonials.length) % testimonials.length);
-
-  const active = testimonials[activeIndex];
+  const next = () => setIndex((prev) => (prev + 1) % testimonials.length);
+  const prev = () => setIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
 
   return (
-    <section className="py-20 bg-gradient-to-b from-gray-50 to-blue-50 relative select-none overflow-hidden">
-      {/* Background blobs */}
-      <div className="absolute top-40 left-0 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-      <div className="absolute bottom-40 right-0 w-64 h-64 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+    <section className="relative py-24 bg-gray-50 overflow-hidden select-none">
+      {/* Animated blobs */}
+      <div className="absolute top-0 left-1/2 w-[600px] h-[600px] bg-blue-300 opacity-20 blur-3xl rounded-full -translate-x-1/2 animate-pulse"></div>
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-300 opacity-20 blur-3xl rounded-full animate-pulse delay-2000"></div>
 
-      <div className="container mx-auto px-6 max-w-6xl">
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center px-4 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-medium mb-6 shadow-sm">
-            <Quote className="w-4 h-4 mr-2" />
-            Beta User Feedback
-          </div>
-          <h2 className="text-3xl md:text-4xl font-extrabold leading-tight max-w-3xl mx-auto">
-            Early Insights on <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Triponic</span> — Your AI Travel Planner
+      <div className="max-w-6xl mx-auto px-6 relative z-10">
+        <div className="text-center mb-16">
+          <span className="inline-flex items-center px-4 py-1 rounded-full bg-blue-100 text-blue-800 text-sm font-medium mb-5">
+            <Quote className="w-4 h-4 mr-2" /> Voices from Beta
+          </span>
+          <h2 className="text-4xl md:text-5xl font-extrabold leading-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-purple-700">
+            What early users say about Triponic
           </h2>
-          <p className="mt-4 text-gray-600 max-w-xl mx-auto">
-            Hear what our early users love and how Triponic is shaping the future of personalized travel.
+          <p className="mt-4 text-gray-600 text-lg max-w-2xl mx-auto">
+            Real reactions from the people shaping our journey to build the smartest AI travel planner.
           </p>
         </div>
 
-        {/* Milestones */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mb-16 text-center">
-          {milestones.map(({ number, label }, idx) => (
-            <div key={idx} className="transform transition-transform hover:scale-110 duration-300">
-              <h3 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">{number}</h3>
-              <p className="text-gray-700 font-medium">{label}</p>
+        {/* Testimonial Card */}
+        <div
+          className={clsx(
+            "transition-all duration-700 ease-in-out transform hover:scale-[1.01]",
+            "bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl overflow-hidden border border-white/20",
+            "relative max-w-5xl mx-auto flex flex-col md:flex-row"
+          )}
+          key={active.id}
+        >
+          {/* Left visual side */}
+          <div
+            className={clsx(
+              "md:w-2/5 p-10 flex flex-col justify-between text-center relative",
+              `bg-gradient-to-br ${active.gradient}`
+            )}
+          >
+            <div className="absolute top-5 left-5 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full flex items-center text-gray-800 text-sm font-semibold shadow-md">
+              {featureIcons[active.spotlightFeature] || <Star />}
+              <span className="ml-2">{active.spotlightFeature}</span>
             </div>
-          ))}
-        </div>
 
-        {/* Testimonial */}
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden max-w-5xl mx-auto flex flex-col md:flex-row">
-          {/* Left panel */}
-          <div className="md:w-2/5 relative bg-gradient-to-br from-blue-600 to-purple-700 p-10 flex flex-col items-center justify-between text-center">
-            <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-sm rounded-full px-5 py-2 flex items-center space-x-3 shadow-md">
-              {featureIcons[active.spotlightFeature] || <Star className="text-yellow-400" />}
-              <span className="text-sm font-semibold text-gray-700">{active.spotlightFeature}</span>
+            <div className="flex-1 flex items-center justify-center">
+              <div className="relative">
+                <div className="absolute -inset-1 rounded-full bg-white/30 blur-md animate-pulse"></div>
+                <img
+                  src={active.image}
+                  alt={active.name}
+                  className="relative w-48 h-48 rounded-full border-4 border-white object-cover shadow-lg"
+                />
+              </div>
             </div>
 
-            <div className="flex items-center justify-center h-72 w-full">
-            <div className="w-52 h-52 rounded-full overflow-hidden border-4 border-white shadow-xl bg-white transition-transform duration-300 hover:scale-105">
-            <img 
-              src={active.image} 
-              alt={active.name} 
-              className="object-cover w-full h-full"
-              loading="lazy"
-          />
+            <div className="absolute bottom-5 left-5 bg-white/80 px-4 py-2 rounded-full flex items-center text-sm text-gray-800 shadow-md">
+              <Heart className="w-4 h-4 mr-1 text-pink-500" />
+              Feeling {active.emotion}
+            </div>
           </div>
 
-            </div>
-
-            <div className="absolute bottom-6 left-6 bg-white rounded-full px-4 py-2 flex items-center shadow-md text-sm font-semibold text-blue-700">
-              <Heart className="w-5 h-5 mr-2 text-pink-500" />
-              Feeling: <span className="ml-1">{active.emotion}</span>
-            </div>
-          </div>
-
-          {/* Right content */}
+          {/* Right content side */}
           <div className="md:w-3/5 p-10 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between mb-6">
-                <Quote className="text-gray-300 w-12 h-12" />
+              <div className="flex justify-between items-center mb-6">
+                <Quote className="text-gray-300 w-10 h-10" />
                 <div className="flex text-yellow-400">
                   {[...Array(Math.floor(active.rating))].map((_, i) => (
-                    <Star key={i} fill="currentColor" size={24} />
+                    <Star key={i} fill="currentColor" size={20} />
                   ))}
-                  {active.rating % 1 !== 0 && (
-                    <div className="relative w-6 h-6">
-                      <Star fill="currentColor" fillOpacity={0.5} size={24} />
-                      <div className="absolute top-0 left-0 overflow-hidden" style={{ width: '50%' }}>
-                        <Star fill="currentColor" size={24} />
-                      </div>
-                    </div>
-                  )}
+                  {active.rating % 1 !== 0 && <Star fill="currentColor" fillOpacity={0.5} size={20} />}
                 </div>
               </div>
 
-              <p className="text-xl text-gray-800 italic mb-12 leading-relaxed">"{active.text}"</p>
-              <div className="flex flex-wrap gap-3 mb-12">
+              <p className="text-lg text-gray-800 italic mb-10 leading-relaxed">
+                “{active.text}”
+              </p>
+
+              <div className="flex flex-wrap gap-3">
                 {active.tags.map((tag, i) => (
                   <span
                     key={i}
-                    className="bg-blue-100 text-blue-700 text-sm font-semibold px-4 py-1 rounded-full shadow-sm"
+                    className="bg-blue-50 text-blue-700 text-sm font-medium px-4 py-1 rounded-full shadow-sm"
                   >
                     {tag}
                   </span>
@@ -182,33 +182,50 @@ const TestimonialsSection = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between mt-10">
               <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 rounded-full border-4 border-blue-600 overflow-hidden shadow-lg">
-                  <img src={active.image} alt={active.name} className="object-cover w-full h-full" loading="lazy" />
-                </div>
+                <img
+                  src={active.image}
+                  alt={active.name}
+                  className="w-14 h-14 rounded-full border-2 border-blue-500 object-cover"
+                />
                 <div>
                   <h4 className="text-lg font-bold text-gray-900">{active.name}</h4>
-                  <div className="flex items-center text-gray-600 text-sm">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {active.location}
-                  </div>
+                  <p className="flex items-center text-gray-600 text-sm">
+                    <MapPin className="w-4 h-4 mr-1" /> {active.location}
+                  </p>
                 </div>
               </div>
+
               <div className="flex space-x-4">
-                <button aria-label="Previous testimonial" onClick={prevTestimonial}
-                  className="p-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <button
+                  onClick={prev}
+                  className="p-3 rounded-full bg-gray-200 hover:bg-blue-600 hover:text-white transition"
+                >
                   <ArrowRight className="rotate-180 w-5 h-5" />
                 </button>
-                <button aria-label="Next testimonial" onClick={nextTestimonial}
-                  className="p-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <button
+                  onClick={next}
+                  className="p-3 rounded-full bg-gray-200 hover:bg-blue-600 hover:text-white transition"
+                >
                   <ArrowRight className="w-5 h-5" />
                 </button>
               </div>
             </div>
           </div>
+
+          {/* Progress bar animation */}
+          <div className="absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-&lsqb;10s&rsqb" style={{ width: "100%", animation: "progress 10s linear infinite" }}></div>
         </div>
       </div>
+
+      {/* Keyframes */}
+      <style>{`
+        @keyframes progress {
+          0% { transform: scaleX(0); transform-origin: left; }
+          100% { transform: scaleX(1); transform-origin: left; }
+        }
+      `}</style>
     </section>
   );
 };
