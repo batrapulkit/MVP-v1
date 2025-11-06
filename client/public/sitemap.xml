@@ -6,190 +6,154 @@
   <!-- ===================== -->
   <!-- 🏠 CORE SITE PAGES -->
   <!-- ===================== -->
-
   <url>
     <loc>https://triponic.com/</loc>
-    <lastmod>2025-11-05</lastmod>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
+
   <url>
     <loc>https://triponic.com/explore</loc>
-    <lastmod>2025-11-05</lastmod>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
-  <url>
-    <loc>https://triponic.com/flights</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://triponic.com/hotels</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
+
   <url>
     <loc>https://triponic.com/itineraries</loc>
-    <lastmod>2025-11-05</lastmod>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+
   <url>
-    <loc>https://triponic.com/deals</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>daily</changefreq>
+    <loc>https://triponic.com/flights</loc>
+    <lastmod>2025-11-06</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
+
   <url>
-    <loc>https://triponic.com/pricing</loc>
-    <lastmod>2025-11-05</lastmod>
+    <loc>https://triponic.com/hotels</loc>
+    <lastmod>2025-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
+    <loc>https://triponic.com/deals</loc>
+    <lastmod>2025-11-06</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://triponic.com/ar-vr</loc>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+
   <url>
-    <loc>https://triponic.com/ar-vr</loc>
-    <lastmod>2025-11-05</lastmod>
+    <loc>https://triponic.com/pricing</loc>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.65</priority>
   </url>
+
   <url>
     <loc>https://triponic.com/about</loc>
-    <lastmod>2025-11-05</lastmod>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
+
   <url>
     <loc>https://triponic.com/contact</loc>
-    <lastmod>2025-11-05</lastmod>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
+
   <url>
     <loc>https://triponic.com/privacy</loc>
-    <lastmod>2025-11-05</lastmod>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+
   <url>
     <loc>https://triponic.com/terms</loc>
-    <lastmod>2025-11-05</lastmod>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
-  </url>
-
-  <!-- ===================== -->
-  <!-- ✈️ ITINERARIES SECTION -->
-  <!-- ===================== -->
-
-  <url>
-    <loc>https://triponic.com/itinerary/paris-france</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://triponic.com/itinerary/london-uk</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://triponic.com/itinerary/rome-italy</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://triponic.com/itinerary/bali-indonesia</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://triponic.com/itinerary/kyoto-japan</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://triponic.com/itinerary/dubai-uae</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://triponic.com/itinerary/new-york-usa</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://triponic.com/itinerary/toronto-canada</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://triponic.com/itinerary/sydney-australia</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
   </url>
 
   <!-- ===================== -->
   <!-- 🧭 BLOG & GUIDES SECTION -->
   <!-- ===================== -->
+  <url>
+    <loc>https://triponic.com/blog</loc>
+    <lastmod>2025-11-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
 
   <url>
-    <loc>https://triponic.com/blog/best-time-to-visit-paris-2025</loc>
-    <lastmod>2025-11-05</lastmod>
+    <loc>https://triponic.com/blog/paris-2025</loc>
+    <lastmod>2025-11-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://triponic.com/blog/ai-travel-planner</loc>
+    <lastmod>2025-11-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://triponic.com/blog/cheap-flights-2025</loc>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
+
   <url>
-    <loc>https://triponic.com/blog/future-of-ai-travel-2025</loc>
-    <lastmod>2025-11-05</lastmod>
+    <loc>https://triponic.com/blog/ultimate-packing-list</loc>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
+
   <url>
-    <loc>https://triponic.com/blog/ai-flight-hacks-2025</loc>
-    <lastmod>2025-11-05</lastmod>
+    <loc>https://triponic.com/blog/bali-best-time</loc>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
+
   <url>
-    <loc>https://triponic.com/blog/ultimate-packing-list-2025</loc>
-    <lastmod>2025-11-05</lastmod>
+    <loc>https://triponic.com/blog/travel-safety-guide</loc>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
+
   <url>
-    <loc>https://triponic.com/blog/best-time-to-visit-bali-2025</loc>
-    <lastmod>2025-11-05</lastmod>
+    <loc>https://triponic.com/blog/europe-solo-travel</loc>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
+
   <url>
-    <loc>https://triponic.com/blog/travel-safety-guide-2025</loc>
-    <lastmod>2025-11-05</lastmod>
+    <loc>https://triponic.com/blog/ultimate-guide-ai-travel-planning</loc>
+    <lastmod>2025-11-06</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://triponic.com/blog/europe-solo-travel-guide-2025</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://triponic.com/blog/ai-travel-planning-guide</loc>
-    <lastmod>2025-11-05</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
 
 </urlset>
