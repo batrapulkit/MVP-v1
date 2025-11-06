@@ -81,11 +81,11 @@ export const blogPosts: BlogPost[] = [
     content: `
       <section>
         <h2>Why AI Travel Planning Wins 2025</h2>
-        <p>Forget spreadsheets and guesswork. Triponic AI builds your full itinerary — optimized routes, weather-aware plans, and live updates.</p>
+        <p>Forget spreadsheets and guesswork. Triponic AI builds your full itinerary -optimized routes, weather-aware plans, and live updates.</p>
         <ul>
           <li>Real-time adaptation to weather and local events.</li>
           <li>Instant flight and hotel sync.</li>
-          <li>Personalized nudges: “Sunset in 15 mins — head to Montmartre.”</li>
+          <li>Personalized nudges: “Sunset in 15 mins -head to Montmartre.”</li>
         </ul>
         <p>See how <a href="/blog/cheap-flights-2025">AI flight deals</a> integrate directly with your live Triponic plan.</p>
       </section>
@@ -99,7 +99,7 @@ export const blogPosts: BlogPost[] = [
       canonical: "https://triponic.com/blog/ai-travel-planner",
       ogTitle: "AI Travel Planner 2025 | Triponic",
       ogDescription:
-        "Plan your trips intelligently with Triponic AI — adaptive itineraries and smart suggestions.",
+        "Plan your trips intelligently with Triponic AI -adaptive itineraries and smart suggestions.",
       ogImage:
         "https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg",
       ogUrl: "https://triponic.com/blog/ai-travel-planner",
@@ -112,7 +112,7 @@ export const blogPosts: BlogPost[] = [
     slug: "cheap-flights-2025",
     title: "Savvy Skies: AI Flight Hacks for 2025",
     description:
-      "Triponic’s AI monitors flights 24/7 to help you save big — no effort needed.",
+      "Triponic’s AI monitors flights 24/7 to help you save big -no effort needed.",
     images: [
       {
         src: "https://images.pexels.com/photos/358319/pexels-photo-358319.jpeg",
@@ -196,7 +196,7 @@ export const blogPosts: BlogPost[] = [
     slug: "bali-best-time",
     title: "Best Time to Visit Bali: Seasons, Festivals & Awe in 2025",
     description:
-      "Crowd-free beaches, lush hills, and cultural magic — find your perfect Bali season with Triponic.",
+      "Crowd-free beaches, lush hills, and cultural magic -find your perfect Bali season with Triponic.",
     images: [
       {
         src: "https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg",
@@ -224,7 +224,7 @@ export const blogPosts: BlogPost[] = [
       canonical: "https://triponic.com/blog/bali-best-time",
       ogTitle: "Best Time to Visit Bali 2025 | Triponic",
       ogDescription:
-        "Find your best Bali — Triponic’s AI balances crowd, cost, and weather.",
+        "Find your best Bali -Triponic’s AI balances crowd, cost, and weather.",
       ogImage:
         "https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg",
       ogUrl: "https://triponic.com/blog/bali-best-time",
@@ -260,7 +260,7 @@ export const blogPosts: BlogPost[] = [
     meta: {
       title: "Travel Safety Guide 2025 | Triponic",
       description:
-        "AI-powered travel safety — stay secure and informed wherever you go.",
+        "AI-powered travel safety -stay secure and informed wherever you go.",
       keywords:
         "travel safety 2025, Triponic safety, solo travel safety tips, AI safety tools",
       canonical: "https://triponic.com/blog/travel-safety-guide",
@@ -292,9 +292,9 @@ export const blogPosts: BlogPost[] = [
         <h2>Europe Solo: 7 Cities for Independent Travelers</h2>
         <p>Solo doesn’t mean isolated. Triponic curates safe, social destinations across Europe, from Berlin’s creative pulse to Copenhagen’s calm charm.</p>
         <ul>
-          <li>Amsterdam — canals, coffee, and connection.</li>
-          <li>Lisbon — warmth and walkability.</li>
-          <li>Prague — culture and cost-friendly stays.</li>
+          <li>Amsterdam -canals, coffee, and connection.</li>
+          <li>Lisbon -warmth and walkability.</li>
+          <li>Prague -culture and cost-friendly stays.</li>
         </ul>
         <p>Use Triponic’s <a href="/explore">Explore</a> tab for real-time itinerary builders for solo travelers.</p>
       </section>
@@ -302,7 +302,7 @@ export const blogPosts: BlogPost[] = [
     meta: {
       title: "Best Solo Cities Europe 2025 | Triponic",
       description:
-        "Solo, not alone — explore Europe’s top cities for independent travelers with Triponic.",
+        "Solo, not alone -explore Europe’s top cities for independent travelers with Triponic.",
       keywords:
         "Europe solo travel 2025, best cities for solo travelers, Triponic itineraries",
       canonical: "https://triponic.com/blog/europe-solo-travel",
@@ -321,7 +321,7 @@ export const blogPosts: BlogPost[] = [
     slug: "ultimate-guide-ai-travel-planning",
     title: "The Ultimate Guide to Using AI for Travel Planning",
     description:
-      "A deep dive into using AI for smarter, stress-free travel — from budgeting to real-time itineraries.",
+      "A deep dive into using AI for smarter, stress-free travel -from budgeting to real-time itineraries.",
     images: [
       {
         src: "https://images.pexels.com/photos/7414008/pexels-photo-7414008.jpeg",
@@ -344,7 +344,7 @@ export const blogPosts: BlogPost[] = [
     meta: {
       title: "Ultimate Guide to AI Travel Planning | Triponic",
       description:
-        "Learn how to plan trips with AI — from budgeting and destinations to mapped itineraries.",
+        "Learn how to plan trips with AI -from budgeting and destinations to mapped itineraries.",
       keywords:
         "AI travel planning, AI itinerary builder, smart travel 2025, Triponic guide",
       canonical: "https://triponic.com/blog/ultimate-guide-ai-travel-planning",
@@ -363,7 +363,7 @@ export const blogPosts: BlogPost[] = [
   slug: "bali-2025",
   title: "Best Time to Visit Bali in 2025: Weather, Seasons & Smart Planning",
   description:
-    "Find the best time to visit Bali in 2025 based on real conditions — weather, crowd levels, and travel costs, curated by Triponic AI.",
+    "Find the best time to visit Bali in 2025 based on real conditions -weather, crowd levels, and travel costs, curated by Triponic AI.",
   images: [
     {
       src: "https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg",
@@ -381,7 +381,7 @@ export const blogPosts: BlogPost[] = [
         <li><b>Dry season (April to October):</b> Sunny skies, low humidity, perfect for beaches, diving, and exploring temples.</li>
         <li><b>Wet season (November to March):</b> More rain, greener landscapes, fewer crowds, and lower prices.</li>
       </ul>
-      <p>There’s no cold season here, only dry and wet. Even during the dry months, short rains can happen — it’s tropical, not predictable.</p>
+      <p>There’s no cold season here, only dry and wet. Even during the dry months, short rains can happen -it’s tropical, not predictable.</p>
 
       <h3>2. The Best Time to Visit in 2025</h3>
       <p>If you want ideal weather and reasonable prices, go in <b>May, June, or September</b>. These months offer the best balance between sunshine, crowds, and cost.</p>
@@ -418,16 +418,16 @@ export const blogPosts: BlogPost[] = [
       <h3>4. Festivals and Local Events in 2025</h3>
       <p>Bali’s spirit shines through its festivals. Time your visit right and you’ll experience something unforgettable.</p>
       <ul>
-        <li><b>Nyepi (Day of Silence):</b> March 29, 2025 — the entire island shuts down for 24 hours of reflection. A once-in-a-lifetime experience.</li>
-        <li><b>Galungan & Kuningan:</b> February 26 and March 8, 2025 — two major temple celebrations marking the triumph of good over evil.</li>
+        <li><b>Nyepi (Day of Silence):</b> March 29, 2025 -the entire island shuts down for 24 hours of reflection. A once-in-a-lifetime experience.</li>
+        <li><b>Galungan & Kuningan:</b> February 26 and March 8, 2025 -two major temple celebrations marking the triumph of good over evil.</li>
       </ul>
-      <p>During these periods, Triponic adjusts your itinerary automatically — fewer outdoor events, more cultural immersion.</p>
+      <p>During these periods, Triponic adjusts your itinerary automatically -fewer outdoor events, more cultural immersion.</p>
 
       <h3>5. Smart Travel Tips for Bali with Triponic</h3>
       <ul>
-        <li>Use Triponic’s <b>season filter</b> to find the best time based on your goals — weather, price, or peace.</li>
+        <li>Use Triponic’s <b>season filter</b> to find the best time based on your goals -weather, price, or peace.</li>
         <li>Explore <a href="/itinerary/bali-indonesia">Triponic’s AI Bali Itinerary</a> for personalized, weather-aware day plans.</li>
-        <li>Plan alternative indoor options — temples, spas, cafes — in case it rains, even during the dry season.</li>
+        <li>Plan alternative indoor options -temples, spas, cafes -in case it rains, even during the dry season.</li>
         <li>Try a three-version itinerary: <b>Dry Season Adventure</b>, <b>Shoulder Season Balance</b>, and <b>Wet Season Culture</b> for variety.</li>
       </ul>
 
@@ -441,7 +441,7 @@ export const blogPosts: BlogPost[] = [
       <p>Book flights and hotels early for peak months. If you go off-season, keep your schedule flexible and expect tropical rain showers.</p>
 
       <h3>7. Final Takeaway</h3>
-      <p>Bali feels magical year-round, but the experience changes with the season. Choose your window based on your travel style — sunshine, solitude, or savings. Triponic helps you plan smarter with live weather insights and adaptive AI itineraries.</p>
+      <p>Bali feels magical year-round, but the experience changes with the season. Choose your window based on your travel style -sunshine, solitude, or savings. Triponic helps you plan smarter with live weather insights and adaptive AI itineraries.</p>
       <p><b>Start planning your perfect Bali trip now with the Triponic Smart Travel Planner.</b></p>
     </section>
   `,
@@ -455,7 +455,7 @@ export const blogPosts: BlogPost[] = [
     canonical: "https://triponic.com/blog/bali-2025",
     ogTitle: "Best Time to Visit Bali 2025 | Triponic AI Travel Guide",
     ogDescription:
-      "Plan your 2025 Bali trip smart. Learn the best months for beaches, culture, and savings — powered by Triponic AI travel insights.",
+      "Plan your 2025 Bali trip smart. Learn the best months for beaches, culture, and savings -powered by Triponic AI travel insights.",
     ogImage: "https://images.pexels.com/photos/753626/pexels-photo-753626.jpeg",
     ogUrl: "https://triponic.com/blog/bali-2025",
     ogType: "article",
