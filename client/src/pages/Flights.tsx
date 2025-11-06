@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
-// Mapping of city/state/country → airport code
+// ✅ Mapping of city/state/country → airport code
 const locationToAirport: Record<string, string> = {
   california: "LAX",
   "los angeles": "LAX",
@@ -37,6 +37,7 @@ function formatDateMDY(dateStr: string) {
   return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
 }
 
+// ✅ Expedia banner widget
 const expediaBannerHTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -86,14 +87,72 @@ const trendingRoutes = [
 ];
 
 const Flights = () => {
+  // ✅ SEO setup — no Helmet needed
+  useEffect(() => {
+    document.title = "Flights | Triponic x Expedia";
+
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription)
+      metaDescription.setAttribute(
+        "content",
+        "Book smarter, fly further with Triponic — AI-powered flight planning and Expedia deals."
+      );
+
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute("content", "Flights | Triponic x Expedia");
+
+    const ogDescription = document.querySelector(
+      'meta[property="og:description"]'
+    );
+    if (ogDescription)
+      ogDescription.setAttribute(
+        "content",
+        "Find affordable, smartly suggested flight routes powered by Expedia and Triponic AI."
+      );
+
+    const ogImage = document.querySelector('meta[property="og:image"]');
+    if (ogImage)
+      ogImage.setAttribute(
+        "content",
+        "https://triponic.com/meta/flights-banner.jpg"
+      );
+
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical)
+      canonical.setAttribute("href", "https://triponic.com/flights");
+
+    // ✅ JSON-LD structured data
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.text = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Flight",
+      name: "Triponic Flights Search",
+      description:
+        "AI-powered flight search and booking powered by Expedia.",
+      provider: {
+        "@type": "Organization",
+        name: "Triponic",
+        url: "https://triponic.com",
+      },
+      brand: {
+        "@type": "Organization",
+        name: "Expedia Group",
+        url: "https://www.expedia.com",
+      },
+    });
+    document.head.appendChild(script);
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, []);
+
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
   const [originSuggestions, setOriginSuggestions] = useState<string[]>([]);
   const [destSuggestions, setDestSuggestions] = useState<string[]>([]);
-
-  // Auto-scroll carousel index
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -145,7 +204,6 @@ const Flights = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center px-6 pb-0 pt-20 relative overflow-hidden">
-
       {/* Gradient Background */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-r from-indigo-700 via-purple-800 to-teal-700 animate-gradient-x"></div>
 
@@ -325,7 +383,7 @@ const Flights = () => {
         </motion.button>
       </motion.form>
 
-      {/* Trending Routes Carousel */}
+      {/* Trending Routes */}
       <div className="mt-16 w-full max-w-4xl">
         <h2 className="text-white text-2xl font-bold mb-4 text-center">
           🔥 Popular Routes
@@ -370,10 +428,26 @@ const Flights = () => {
       <div className="mt-16 w-full max-w-4xl text-center">
         <p className="text-gray-200 mb-4">Trusted by travelers worldwide</p>
         <div className="flex justify-center gap-10 opacity-80 flex-wrap">
-          <img src="https://logos-world.net/wp-content/uploads/2021/02/Expedia-Logo.png" alt="Expedia" className="h-8" />
-          <img src="https://companieslogo.com/img/orig/TCOM-c4449ac1.png" alt="Trip.com" className="h-8" />
-          <img src="https://companieslogo.com/img/orig/BKNG-e808a96f.png" alt="Booking.com" className="h-8" />
-          <img src="https://cdn.worldvectorlogo.com/logos/skyscanner-1.svg" alt="Skyscanner" className="h-8" />
+          <img
+            src="https://logos-world.net/wp-content/uploads/2021/02/Expedia-Logo.png"
+            alt="Expedia"
+            className="h-8"
+          />
+          <img
+            src="https://companieslogo.com/img/orig/TCOM-c4449ac1.png"
+            alt="Trip.com"
+            className="h-8"
+          />
+          <img
+            src="https://companieslogo.com/img/orig/BKNG-e808a96f.png"
+            alt="Booking.com"
+            className="h-8"
+          />
+          <img
+            src="https://cdn.worldvectorlogo.com/logos/skyscanner-1.svg"
+            alt="Skyscanner"
+            className="h-8"
+          />
         </div>
       </div>
 
@@ -392,7 +466,7 @@ const Flights = () => {
         </svg>
       </div>
 
-      {/* CSS */}
+      {/* Extra CSS */}
       <style>{`
         .animate-gradient-x {
           background-size: 200% 200%;
