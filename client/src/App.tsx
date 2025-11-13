@@ -30,6 +30,11 @@ import Flights from "@/pages/Flights";
 import LiveChatbot from "@/components/LiveChatbot";
 import ChatBot from "@/components/ChatBot";
 import EditProfile from "./pages/EditProfile";
+import Privacy from "@/pages/privacy";
+import Terms from "@/pages/terms";
+import Cookies from "@/pages/cookies";
+import Refunds from "@/pages/refunds";
+import Contact from "@/pages/contact";
 
 function Router() {
   return (
@@ -67,6 +72,13 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/ar-vr" component={ARVR} />
       <Route path="/pricing" component={Pricing} />
+
+      {/* Legal & Static Pages */}
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/cookies" component={Cookies} />
+      <Route path="/refunds" component={Refunds} />
+      <Route path="/contact" component={Contact} />
       
       <Route path="/signin">
         <PublicRoute>
