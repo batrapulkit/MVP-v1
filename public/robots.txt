@@ -1,11 +1,69 @@
-# Allow all bots to crawl the site
+# ======================================
+# Triponic.com — B2C Robots Configuration
+# Purpose: Max SEO visibility + AI crawl readiness
+# Updated: 2025-11-13
+# ======================================
+
 User-agent: *
 Allow: /
-
-# Block sensitive or non-public routes
-Disallow: /admin/
 Disallow: /api/
+Disallow: /checkout/
+Disallow: /auth/
+Disallow: /admin/
 Disallow: /dashboard/
+Crawl-delay: 5
 
-# Point to the sitemap for this subdomain
+# 🧠 Explicit AI / LLM Crawlers
+User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Crawl-delay: 5
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# 🗺️ Sitemaps
 Sitemap: https://triponic.com/sitemap.xml
+Sitemap: https://triponic.com/sitemap-itineraries.xml
+Sitemap: https://triponic.com/sitemap-blogs.xml
+Sitemap: https://triponic.com/sitemap-guides.xml
+
+# ✅ High-value public pages
+Allow: /privacy
+Allow: /terms
+Allow: /cookies
+Allow: /refunds
+Allow: /about
+Allow: /contact
+Allow: /explore
+Allow: /itineraries
+Allow: /blogs
+Allow: /guides
+Allow: /stories
+Allow: /destinations
+
+# 🔒 Private/sensitive areas (not for crawlers)
+Disallow: /user/
+Disallow: /profile/
+Disallow: /settings/
+Disallow: /messages/
+Disallow: /payments/
+
+# 🧩 Crawl Notes:
+# - Encourage structured discovery for AI (LLMs can index non-API pages)
+# - Use canonical URLs on all pages for consistency
+# - Keep /blog/, /itineraries/, /guides/ crawlable for long-tail traffic
+
+# End of File
