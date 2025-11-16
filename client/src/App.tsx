@@ -19,6 +19,8 @@ import SignIn from "@/pages/SignIn";
 import useUserLocation from "@/components/hooks/useUserLocation";
 import Profile from "@/pages/Profile";
 import SignUp from "@/pages/SignUp";
+import ForgotPassword from "@/pages/ForgotPassword";
+import ResetPassword from "@/pages/ResetPassword";
 import About from "@/pages/About";
 import ARVR from "@/pages/ARVR";
 import Pricing from "@/pages/Pricing";
@@ -48,6 +50,8 @@ function Router() {
       <Route path="/edit-profile" component={EditProfile} />
       <Route path="/blogs" component={Blogs} />
       <Route path="/blog/:slug" component={BlogDetails} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       
       <Route path="/profile">
         <ProtectedRoute>
