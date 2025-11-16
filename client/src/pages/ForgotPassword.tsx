@@ -1,17 +1,18 @@
-import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useState, FormEvent } from "react";
+import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const { toast } = useToast();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
     setLoading(true);
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`
     });
@@ -20,7 +21,7 @@ export default function ForgotPassword() {
 
     if (error) {
       toast({
-        title: "Failed",
+        title: "Error",
         description: error.message,
         variant: "destructive"
       });
@@ -28,25 +29,26 @@ export default function ForgotPassword() {
     }
 
     toast({
-      title: "Check your email",
-      description: "Password reset link sent successfully"
+      title: "Email Sent",
+      description: "Check your inbox for the reset link."
     });
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="max-w-md w-full bg-white shadow-xl rounded-2xl p-8">
-        <h2 className="text-2xl font-bold mb-6">Forgot Password</h2>
+        <h1 className="text-2xl font-bold mb-6">Forgot Password</h1>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block mb-2 text-sm font-medium">Email</label>
+            <label className="block mb-2 font-medium">Email</label>
             <input
               type="email"
               className="w-full border px-4 py-3 rounded-xl"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="email"
             />
           </div>
 
@@ -55,7 +57,7 @@ export default function ForgotPassword() {
             disabled={loading}
             className="w-full bg-indigo-600 text-white py-3 rounded-xl"
           >
-            {loading ? "Sending..." : "Send reset link"}
+            {loading ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
       </div>
