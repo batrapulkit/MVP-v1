@@ -1,5 +1,6 @@
 import { useState, FormEvent } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ForgotPassword() {
